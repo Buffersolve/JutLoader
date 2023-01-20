@@ -29,7 +29,8 @@ import com.buffersolve.jutloader.model.Seria
 import com.buffersolve.jutloader.ui.theme.JutloaderTheme
 
 const val url = "https://jut.su/berserk/season-4/episode-1.html"
-const val url2 = "https://jut.su/shingekii-no-kyojin/"
+
+//const val url2 = "https://jut.su/shingekii-no-kyojin/"
 const val url3 = "https://jut.su/vinland-saga/"
 const val url4 = "https://jut.su/shingekii-no-kyojin/season-1/"
 const val url5 = "https://jut.su/shingekii-no-kyojin/season-1/episode-1.html"
@@ -43,6 +44,9 @@ var checkedItems = listOf<String>()
 val SeriesSnapshotStateList = SnapshotStateList<String>()
 val SeriesLinkSnapshotStateList = SnapshotStateList<String>()
 var openDialogValue = false
+var input: String = ""
+
+
 class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -53,7 +57,7 @@ class MainActivity : ComponentActivity() {
                 // A surface container using the 'background' color from the theme
                 Column {
                     TextField()
-                    SelectButton(text = "Select")
+//                    SelectButton(text = "Select")
 //                    CardSelectSeries(this@MainActivity)
                     NavigationDialog(this@MainActivity, webViewAgent, this@MainActivity)
 
@@ -66,7 +70,6 @@ class MainActivity : ComponentActivity() {
         Log.d("AGENT", webViewAgent)
 
         viewModel = ViewModelProvider(this)[MainActivityViewModel::class.java]
-        viewModel.networking(this, webViewAgent)
 
 
     }
@@ -84,6 +87,7 @@ fun TextField() {
     var text by remember {
         mutableStateOf(TextFieldValue(""))
     }
+
     OutlinedTextField(
         modifier = Modifier
             .fillMaxWidth()
@@ -92,26 +96,27 @@ fun TextField() {
         label = { Text("Input") },
         onValueChange = {
             text = it
+            input = it.text
         }
     )
 }
 
-@Composable
-fun SelectButton(
-    modifier: Modifier = Modifier,
-    text: String
-) {
-    OutlinedButton(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(start = 24.dp, end = 24.dp),
-        onClick = {
-            openDialogValue = true
-        },
-    ) {
-        Text(text = text)
-    }
-}
+//@Composable
+//fun SelectButton(
+//    modifier: Modifier = Modifier,
+//    text: String
+//) {
+//    OutlinedButton(
+//        modifier = modifier
+//            .fillMaxWidth()
+//            .padding(start = 24.dp, end = 24.dp),
+//        onClick = {
+//            openDialogValue = true
+//        },
+//    ) {
+//        Text(text = text)
+//    }
+//}
 
 @Composable
 fun NavigationDialog(
@@ -141,6 +146,8 @@ fun NavigationDialog(
     }
     viewModel.seria.observe(viewLifecycleOwner) {
         seriesList.value = it.seria
+//        seriesList.value = it.seriaLink
+
         Log.d("SERIES", seriesList.value.toString())
     }
 
@@ -152,26 +159,37 @@ fun NavigationDialog(
         Log.d("SERIESLINK", seriesLink.value.toString())
     }
 
-
-    //
-    val openDialog = remember {
-        mutableStateOf(openDialogValue)
+    val dialogShown = remember {
+        mutableStateOf(false)
     }
 
-    // List Checked
-//    val checkedList = remember {
-//        mutableStateOf(checkedItems)
-//    }
+    // Btn
+    OutlinedButton(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 24.dp, end = 24.dp),
+        onClick = {
+            dialogShown.value = true
+            if (input.isNotEmpty()) {
+                viewModel.networking(input, context, webViewAgent)
+            }
+
+        },
+    ) {
+        Text(text = "Select")
+    }
 
     val controller = rememberNavController()
 
-    if (openDialog.value) {
+    // Dialog
+    if (dialogShown.value && input.isNotEmpty()) {
 
         AlertDialog(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(top = 24.dp, bottom = 24.dp),
-            onDismissRequest = { controller.popBackStack() },
+//            onDismissRequest = { controller.popBackStack() },
+            onDismissRequest = { dialogShown.value = false },
             title = { Text(text = "title") },
             text = {
                 NavHost(navController = controller, startDestination = "SeasonPeakList") {
@@ -180,7 +198,9 @@ fun NavigationDialog(
                             controller,
                             seasonList.value,
                             seasonLink.value,
-                            userAgent
+                            seriesList.value,
+                            userAgent,
+                            viewLifecycleOwner
                         )
                     }
                     composable("SeriesPeakList") {
@@ -206,7 +226,9 @@ fun NavigationDialog(
                             userAgent = userAgent,
                             listOfSeries = SeriesSnapshotStateList,
                             listOfLinks = SeriesLinkSnapshotStateList
-                            )
+                        )
+
+                        dialogShown.value = false
 
                     }) { Text(text = "Confirm") }
                     else -> {
@@ -215,7 +237,7 @@ fun NavigationDialog(
                 }
             },
             dismissButton = {
-                TextButton(onClick = { openDialog.value = false }) {
+                TextButton(onClick = { dialogShown.value = false }) {
                     Text(text = "Dismiss")
                 }
             }
@@ -228,7 +250,9 @@ fun SeasonPeakList(
     controller: NavHostController,
     numberSeasonsList: List<String>,
     linkSeriesList: List<String>,
+    seriesList: List<String>,
     userAgent: String,
+    viewLifecycleOwner: LifecycleOwner
 ) {
 
     Column {
@@ -241,10 +265,20 @@ fun SeasonPeakList(
                         val index = numberSeasonsList.indexOf(it)
                         Log.d("INDEX", index.toString())
 
-                        viewModel.networkSeries(
-                            userAgent = userAgent,
-                            urlForSeries = linkSeriesList[index]
-                        )
+                        var isHasOnlyOneSeasonToken: Boolean = false
+
+                        viewModel.hasOnlyOneSeasonToken.observe(viewLifecycleOwner) {
+                            isHasOnlyOneSeasonToken = it
+                        }
+
+                        if (!isHasOnlyOneSeasonToken) {
+                            viewModel.networkSeries(
+                                userAgent = userAgent,
+                                urlForSeries = linkSeriesList[index]
+                            )
+
+                        }
+
                         Log.d("INDEX", linkSeriesList[index])
 
                         controller.navigate("SeriesPeakList")

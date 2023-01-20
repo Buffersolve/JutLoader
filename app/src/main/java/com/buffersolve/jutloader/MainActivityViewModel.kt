@@ -29,42 +29,93 @@ class MainActivityViewModel : ViewModel() {
     val seria: LiveData<Seria>
         get() = _seria
 
+    private val _hasOnlyOneSeasonToken: MutableLiveData<Boolean> = MutableLiveData()
+    val hasOnlyOneSeasonToken: LiveData<Boolean>
+        get() = _hasOnlyOneSeasonToken
+
 //    private val _events = MutableSharedFlow<MutableList<String>>() // private mutable shared flow
 //    val events = _events.asSharedFlow()
 
-    fun networking(context: Context, userAgent: String) = viewModelScope.launch(Dispatchers.IO) {
+    fun networking(url: String, context: Context, userAgent: String) = viewModelScope.launch(Dispatchers.IO) {
 
-        val doc: Document = Jsoup.connect(url2)
+        val doc: Document = Jsoup.connect(url)
             .userAgent(userAgent)
             .get()
 
         // Кількість сезонів
-        val seasons = doc.select("h2[class=\"b-b-title the-anime-season center\"]").eachText()
-        val films =
-            doc.select("h2[class=\"b-b-title the-anime-season center films_title\"]").eachText()
-        seasons.addAll(films)
+
+        if (doc.select("div[class=\"the_invis\"]").size > 0) {
+
+            val isHasOnlyOneSeasonToken = false
+            _hasOnlyOneSeasonToken.postValue(isHasOnlyOneSeasonToken)
+
+            val seasons = doc.select("h2[class=\"b-b-title the-anime-season center\"]").eachText()
+            val seasonsLinkS = doc.select("div[class=\"the_invis\"]")
+            val elements: Elements = seasonsLinkS.select("a")
+
+            val elList = mutableListOf<String>()
+
+            elements.forEach {
+                val attr = it.attr("href")
+                elList.add(attr)
+            }
+            val season = Season(seasons, elList)
+            _season.postValue(season)
+
+        } else if (doc.select("div[class=\"the_invis\"]").size < 1) {
+
+            val isHasOnlyOneSeasonToken = true
+            _hasOnlyOneSeasonToken.postValue(isHasOnlyOneSeasonToken)
+
+            val season = doc.select("h1[class=\"header_video allanimevideo anime_padding_for_title\"]").eachText()
+            val seasonSeries = doc.select("a[class=\"short-btn black video the_hildi\"]")
+                .textNodes().map { it.toString() }
+            val seasonSeriesGreen = doc.select("a[class=\"short-btn green video the_hildi\"]")
+                .textNodes().map { it.toString() }
+
+            val listSeries = mutableListOf<String>()
+            listSeries.addAll(seasonSeries)
+            listSeries.addAll(seasonSeriesGreen)
+            listSeries.toList()
+            Log.d("SEASOLINK1", listSeries.toString())
+
+            // Links
+            val seasonSeriesLink = doc.select("a[class=\"short-btn black video the_hildi\"]")
+            val elements: Elements = seasonSeriesLink.select("a")
+
+
+            val elList = mutableListOf<String>()
+
+            elements.forEach {
+                val attr = it.attr("href")
+                elList.add(attr)
+            }
+
+            val seasonOne = Season(season, elList)
+            val seriesOne = Seria(seria = listSeries, seriaLink = elList)
+
+            _season.postValue(seasonOne)
+            _seria.postValue(seriesOne)
+            Log.d("SEASOLINK1", _seria.value.toString())
+//            Log.d("SEASOLINK1", _season.value.toString())
+
+        }
+
+//        val films =
+//            doc.select("h2[class=\"b-b-title the-anime-season center films_title\"]").eachText()
+//        seasons.addAll(films)
 
         ////
 
         // Посилання на сезон
-        val seasonsLinkS = doc.select("div[class=\"the_invis\"]")
-        val elements: Elements = seasonsLinkS.select("a")
 
-        val elList = mutableListOf<String>()
-
-        elements.forEach {
-            val attr = it.attr("href")
-            elList.add(attr)
-        }
 
         //
 
-        val season = Season(seasons, elList)
 
         ////
 
         // LiveData
-        _season.postValue(season)
 
 
 //        _events.emit(seasons)
