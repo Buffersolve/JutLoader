@@ -1,5 +1,6 @@
 package com.buffersolve.jutloader
 
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.webkit.WebView
@@ -39,8 +40,9 @@ lateinit var webViewAgent: String
 val checked: MutableLiveData<MutableList<String>> = MutableLiveData()
 
 var checkedItems = listOf<String>()
-val snapshotStateList = SnapshotStateList<String>()
-
+val SeriesSnapshotStateList = SnapshotStateList<String>()
+val SeriesLinkSnapshotStateList = SnapshotStateList<String>()
+var openDialogValue = false
 class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -53,7 +55,7 @@ class MainActivity : ComponentActivity() {
                     TextField()
                     SelectButton(text = "Select")
 //                    CardSelectSeries(this@MainActivity)
-                    NavigationDialog(this@MainActivity, webViewAgent)
+                    NavigationDialog(this@MainActivity, webViewAgent, this@MainActivity)
 
 //                    CreateDialog(this@MainActivity, this@MainActivity)
                 }
@@ -103,14 +105,20 @@ fun SelectButton(
         modifier = modifier
             .fillMaxWidth()
             .padding(start = 24.dp, end = 24.dp),
-        onClick = { },
+        onClick = {
+            openDialogValue = true
+        },
     ) {
         Text(text = text)
     }
 }
 
 @Composable
-fun NavigationDialog(viewLifecycleOwner: LifecycleOwner, userAgent: String) {
+fun NavigationDialog(
+    viewLifecycleOwner: LifecycleOwner,
+    userAgent: String,
+    context: Context
+) {
 
     // Lists
     val seasonList = remember {
@@ -140,14 +148,14 @@ fun NavigationDialog(viewLifecycleOwner: LifecycleOwner, userAgent: String) {
         mutableStateOf(listOf<String>())
     }
     viewModel.seria.observe(viewLifecycleOwner) {
-        seriesLink.value = it.seria
+        seriesLink.value = it.seriaLink
         Log.d("SERIESLINK", seriesLink.value.toString())
     }
 
 
     //
     val openDialog = remember {
-        mutableStateOf(true)
+        mutableStateOf(openDialogValue)
     }
 
     // List Checked
@@ -158,24 +166,6 @@ fun NavigationDialog(viewLifecycleOwner: LifecycleOwner, userAgent: String) {
     val controller = rememberNavController()
 
     if (openDialog.value) {
-
-//        Dialog(onDismissRequest = { }) {
-//            Button(onClick = {
-//                /*TODO*/
-//            }) {
-////                if (checkedList.isNotEmpty()) {
-////                    TextButton(onClick = {
-////
-////                        // TODO
-////
-////                    }) {
-////                        Text(text = "Confirm")
-////                    }
-////                } else {
-////                    Text(text = "")
-////                }
-//            }
-//        }
 
         AlertDialog(
             modifier = Modifier
@@ -206,12 +196,17 @@ fun NavigationDialog(viewLifecycleOwner: LifecycleOwner, userAgent: String) {
 
             },
             confirmButton = {
-                Log.d("CONFIRMBUTTON", snapshotStateList.toString())
+                Log.d("CONFIRMBUTTON", SeriesSnapshotStateList.toString())
 
-                when (snapshotStateList.isNotEmpty()) {
+                when (SeriesSnapshotStateList.isNotEmpty()) {
                     true -> TextButton(onClick = {
 
-                        // TODO
+                        viewModel.networkingResolutionAndFinal(
+                            context,
+                            userAgent = userAgent,
+                            listOfSeries = SeriesSnapshotStateList,
+                            listOfLinks = SeriesLinkSnapshotStateList
+                            )
 
                     }) { Text(text = "Confirm") }
                     else -> {
@@ -295,8 +290,6 @@ fun SeriesPeakList(
         LazyColumn {
             items(seriesList) { item ->
 
-
-
                 val isChecked = rememberSaveable { mutableStateOf(false) }
 
                 Row {
@@ -306,16 +299,21 @@ fun SeriesPeakList(
                         onCheckedChange = { newValue ->
                             isChecked.value = newValue
                             if (newValue) {
-//                                checked.postValue(item)
-                                snapshotStateList.add(item)
+                                SeriesSnapshotStateList.add(item)
+
+                                val index = seriesList.indexOf(item)
+                                SeriesLinkSnapshotStateList.add(linkSeriesList[index])
                             } else {
-//                                checked.value.remo
-                                snapshotStateList.remove(item)
+                                SeriesSnapshotStateList.remove(item)
+
+                                val index = seriesList.indexOf(item)
+                                SeriesLinkSnapshotStateList.remove(linkSeriesList[index])
                             }
 
-//                            snapshotStateList = checkedItem.toList()
+//                            SeriesSnapshotStateList = checkedItem.toList()
 //                            checkedItems = checkedItem
-                            Log.d("CHECKED", snapshotStateList.toList().toString())
+                            Log.d("CHECKED", SeriesSnapshotStateList.toList().toString())
+                            Log.d("CHECKED", SeriesLinkSnapshotStateList.toList().toString())
 
                         }
                     )
