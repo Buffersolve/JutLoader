@@ -183,11 +183,19 @@ class MainActivityViewModel : ViewModel() {
         val hardcodeRes = 720
 
         val linkOfConcreteSeria = mutableListOf<String>()
+        val listOfSeriesName = mutableListOf<String>()
 
         for (url in listOfLinks) {
             val doc3: Document = Jsoup.connect("https://jut.su" + url)
                 .userAgent(userAgent)
                 .get()
+
+//            val name = doc3.select("span[itemprop=\"name\"]").eachText()
+            val name = doc3.select("h1[class=\"header_video allanimevideo the_hildi anime_padding_for_title_post\"]")
+                .eachText().map { it.replaceFirst("Смотреть", "") }.map { it.replaceFirst(" ", "") }
+
+            listOfSeriesName.addAll(name)
+            Log.d("NAMEOFSER", listOfSeriesName.toString())
 
             val resSelect = doc3.select("source[res=\"$hardcodeRes\"]")
                 .attr("src")
@@ -196,19 +204,26 @@ class MainActivityViewModel : ViewModel() {
 
             Log.d("RESELECT", resSelect)
 
+//            Log.d("NAMELIST", listOfSeriesName.toString())
+
         }
+
+        Log.d("NAMELIST", listOfSeriesName.toString())
 
         downloadManager(
             context = context,
             userAgent = userAgent,
-            linkOfConcreteSeria)
+            linkOfConcreteSeria,
+            listOfSeriesName
+        )
 
     }
 
     fun downloadManager(
         context: Context,
         userAgent: String,
-        linkOfConcreteSeria: MutableList<String>
+        linkOfConcreteSeria: MutableList<String>,
+        names: MutableList<String>
         ) {
         val downloadManager: DownloadManager = context.getSystemService(
             ComponentActivity.DOWNLOAD_SERVICE
@@ -217,19 +232,18 @@ class MainActivityViewModel : ViewModel() {
 //        Log.d("URLTAG", docEl.value)
 
         for (url in linkOfConcreteSeria) {
+                val request = DownloadManager.Request(Uri.parse(url))
+                    .addRequestHeader("User-Agent", userAgent)
+                    .setAllowedOverMetered(true)
+//                    .setTitle("Downloading File")
+//                    .setDescription("Download in progress")
+                    .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)
+                    .setDestinationInExternalPublicDir(
+                        Environment.DIRECTORY_DOWNLOADS,
+                        "${names[linkOfConcreteSeria.indexOf(url)]}.mp4"
+                    )
 
-            val request = DownloadManager.Request(Uri.parse(url))
-                .addRequestHeader("User-Agent", userAgent)
-                .setAllowedOverMetered(true)
-                .setTitle("Download")
-                .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)
-                .setDestinationInExternalPublicDir(
-                    Environment.DIRECTORY_DOWNLOADS,
-                    "downloadfileName.mp4"
-                )
-
-        downloadManager.enqueue(request)
-
+                downloadManager.enqueue(request)
         }
     }
 
