@@ -3,9 +3,12 @@ package com.buffersolve.jutloader
 import android.app.DownloadManager
 import android.content.Context
 import android.net.Uri
+import android.os.Build
 import android.os.Environment
 import android.util.Log
+import android.util.Log.d
 import androidx.activity.ComponentActivity
+import androidx.annotation.RequiresApi
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -18,6 +21,11 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import org.jsoup.select.Elements
+import java.io.File
+import java.io.File.separator
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
 
 class MainActivityViewModel : ViewModel() {
 
@@ -36,92 +44,96 @@ class MainActivityViewModel : ViewModel() {
 //    private val _events = MutableSharedFlow<MutableList<String>>() // private mutable shared flow
 //    val events = _events.asSharedFlow()
 
-    fun networking(url: String, context: Context, userAgent: String) = viewModelScope.launch(Dispatchers.IO) {
+    fun networking(url: String, context: Context, userAgent: String) =
+        viewModelScope.launch(Dispatchers.IO) {
 
-        val doc: Document = Jsoup.connect(url)
-            .userAgent(userAgent)
-            .get()
+            val doc: Document = Jsoup.connect(url)
+                .userAgent(userAgent)
+                .get()
 
-        // Кількість сезонів
+            // Кількість сезонів
 
-        if (doc.select("div[class=\"the_invis\"]").size > 0) {
+            if (doc.select("div[class=\"the_invis\"]").size > 0) {
 
-            val isHasOnlyOneSeasonToken = false
-            _hasOnlyOneSeasonToken.postValue(isHasOnlyOneSeasonToken)
+                val isHasOnlyOneSeasonToken = false
+                _hasOnlyOneSeasonToken.postValue(isHasOnlyOneSeasonToken)
 
-            val seasons = doc.select("h2[class=\"b-b-title the-anime-season center\"]").eachText()
-            val seasonsLinkS = doc.select("div[class=\"the_invis\"]")
-            val elements: Elements = seasonsLinkS.select("a")
+                val seasons =
+                    doc.select("h2[class=\"b-b-title the-anime-season center\"]").eachText()
+                val seasonsLinkS = doc.select("div[class=\"the_invis\"]")
+                val elements: Elements = seasonsLinkS.select("a")
 
-            val elList = mutableListOf<String>()
+                val elList = mutableListOf<String>()
 
-            elements.forEach {
-                val attr = it.attr("href")
-                elList.add(attr)
-            }
-            val season = Season(seasons, elList)
-            _season.postValue(season)
+                elements.forEach {
+                    val attr = it.attr("href")
+                    elList.add(attr)
+                }
+                val season = Season(seasons, elList)
+                _season.postValue(season)
 
-        } else if (doc.select("div[class=\"the_invis\"]").size < 1) {
+            } else if (doc.select("div[class=\"the_invis\"]").size < 1) {
 
-            val isHasOnlyOneSeasonToken = true
-            _hasOnlyOneSeasonToken.postValue(isHasOnlyOneSeasonToken)
+                val isHasOnlyOneSeasonToken = true
+                _hasOnlyOneSeasonToken.postValue(isHasOnlyOneSeasonToken)
 
-            val season = doc.select("h1[class=\"header_video allanimevideo anime_padding_for_title\"]").eachText()
-            val seasonSeries = doc.select("a[class=\"short-btn black video the_hildi\"]")
-                .textNodes().map { it.toString() }
-            val seasonSeriesGreen = doc.select("a[class=\"short-btn green video the_hildi\"]")
-                .textNodes().map { it.toString() }
+                val season =
+                    doc.select("h1[class=\"header_video allanimevideo anime_padding_for_title\"]")
+                        .eachText()
+                val seasonSeries = doc.select("a[class=\"short-btn black video the_hildi\"]")
+                    .textNodes().map { it.toString() }
+                val seasonSeriesGreen = doc.select("a[class=\"short-btn green video the_hildi\"]")
+                    .textNodes().map { it.toString() }
 
-            val listSeries = mutableListOf<String>()
-            listSeries.addAll(seasonSeries)
-            listSeries.addAll(seasonSeriesGreen)
-            listSeries.toList()
-            Log.d("SEASOLINK1", listSeries.toString())
+                val listSeries = mutableListOf<String>()
+                listSeries.addAll(seasonSeries)
+                listSeries.addAll(seasonSeriesGreen)
+                listSeries.toList()
+                Log.d("SEASOLINK1", listSeries.toString())
 
-            // Links
-            val seasonSeriesLink = doc.select("a[class=\"short-btn black video the_hildi\"]")
-            val elements: Elements = seasonSeriesLink.select("a")
+                // Links
+                val seasonSeriesLink = doc.select("a[class=\"short-btn black video the_hildi\"]")
+                val elements: Elements = seasonSeriesLink.select("a")
 
 
-            val elList = mutableListOf<String>()
+                val elList = mutableListOf<String>()
 
-            elements.forEach {
-                val attr = it.attr("href")
-                elList.add(attr)
-            }
+                elements.forEach {
+                    val attr = it.attr("href")
+                    elList.add(attr)
+                }
 
-            val seasonOne = Season(season, elList)
-            val seriesOne = Seria(seria = listSeries, seriaLink = elList)
+                val seasonOne = Season(season, elList)
+                val seriesOne = Seria(seria = listSeries, seriaLink = elList)
 
-            _season.postValue(seasonOne)
-            _seria.postValue(seriesOne)
-            Log.d("SEASOLINK1", _seria.value.toString())
+                _season.postValue(seasonOne)
+                _seria.postValue(seriesOne)
+                Log.d("SEASOLINK1", _seria.value.toString())
 //            Log.d("SEASOLINK1", _season.value.toString())
 
-        }
+            }
 
 //        val films =
 //            doc.select("h2[class=\"b-b-title the-anime-season center films_title\"]").eachText()
 //        seasons.addAll(films)
 
-        ////
+            ////
 
-        // Посилання на сезон
-
-
-        //
+            // Посилання на сезон
 
 
-        ////
+            //
 
-        // LiveData
+
+            ////
+
+            // LiveData
 
 
 //        _events.emit(seasons)
 
 
-    }
+        }
 
     fun networkSeries(userAgent: String, urlForSeries: String) =
         viewModelScope.launch(Dispatchers.IO) {
@@ -191,8 +203,10 @@ class MainActivityViewModel : ViewModel() {
                 .get()
 
 //            val name = doc3.select("span[itemprop=\"name\"]").eachText()
-            val name = doc3.select("h1[class=\"header_video allanimevideo the_hildi anime_padding_for_title_post\"]")
-                .eachText().map { it.replaceFirst("Смотреть", "") }.map { it.replaceFirst(" ", "") }
+            val name =
+                doc3.select("h1[class=\"header_video allanimevideo the_hildi anime_padding_for_title_post\"]")
+                    .eachText().map { it.replaceFirst("Смотреть", "") }
+                    .map { it.replaceFirst(" ", "") }
 
             listOfSeriesName.addAll(name)
             Log.d("NAMEOFSER", listOfSeriesName.toString())
@@ -219,31 +233,43 @@ class MainActivityViewModel : ViewModel() {
 
     }
 
+    //    @RequiresApi(Build.VERSION_CODES.O)
     fun downloadManager(
         context: Context,
         userAgent: String,
         linkOfConcreteSeria: MutableList<String>,
         names: MutableList<String>
-        ) {
+    ) {
+
+        val deleteDublicateNames = LinkedHashSet(names).toMutableList()
+        val deleteDublicateLinks = LinkedHashSet(linkOfConcreteSeria).toMutableList()
+
+        // DM
         val downloadManager: DownloadManager = context.getSystemService(
             ComponentActivity.DOWNLOAD_SERVICE
         ) as DownloadManager
 
-//        Log.d("URLTAG", docEl.value)
+        // Directory
+        val directory = File(
+            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
+            "JutLoader"
+        )
+        if (!directory.exists()) directory.mkdirs()
 
-        for (url in linkOfConcreteSeria) {
-                val request = DownloadManager.Request(Uri.parse(url))
-                    .addRequestHeader("User-Agent", userAgent)
-                    .setAllowedOverMetered(true)
-//                    .setTitle("Downloading File")
-//                    .setDescription("Download in progress")
-                    .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)
-                    .setDestinationInExternalPublicDir(
-                        Environment.DIRECTORY_DOWNLOADS,
-                        "${names[linkOfConcreteSeria.indexOf(url)]}.mp4"
+        // Request
+        for (url in deleteDublicateLinks) {
+            val request = DownloadManager.Request(Uri.parse(url))
+                .addRequestHeader("User-Agent", userAgent)
+                .setAllowedOverMetered(true)
+                .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)
+                .setDestinationUri(Uri.fromFile(
+                    File(
+                        directory,
+                        "${deleteDublicateNames[deleteDublicateLinks.indexOf(url)]}.mp4")
                     )
+                )
 
-                downloadManager.enqueue(request)
+            downloadManager.enqueue(request)
         }
     }
 

@@ -5,16 +5,21 @@ import android.content.Context
 import android.content.ContextWrapper
 import android.content.pm.ActivityInfo
 import android.os.Bundle
+import android.os.Environment
 import android.util.Log
 import android.webkit.WebView
+import android.widget.ProgressBar
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
+//import androidx.compose.foundation.layout.ColumnScopeInstance.align
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -46,20 +51,14 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
-import androidx.constraintlayout.solver.Metrics
-import androidx.core.view.WindowCompat
 import androidx.lifecycle.*
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.buffersolve.jutloader.model.Seria
 import com.buffersolve.jutloader.ui.theme.JutloaderTheme
-import com.google.accompanist.systemuicontroller.SystemUiController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
-import com.google.android.material.color.DynamicColors
-import com.google.android.material.elevation.SurfaceColors
+import java.io.File
 
 lateinit var viewModel: MainActivityViewModel
 lateinit var webViewAgent: String
@@ -103,18 +102,26 @@ class MainActivity : ComponentActivity() {
                     )
                 )
 
+
                 val systemUiController = rememberSystemUiController()
                 systemUiController.setNavigationBarColor(
                     color = MaterialTheme.colorScheme.background
                 )
+
+                val statusBarColor = MaterialTheme.colorScheme.secondaryContainer
+                SideEffect {
+                    systemUiController.setStatusBarColor(
+                        color = statusBarColor
+                    )
+                }
 
                 Scaffold(
                     topBar = {
                         TopAppBar(
                             title = { Text(text = "JutLoader") },
                             colors = TopAppBarDefaults.topAppBarColors(
-                                containerColor = MaterialTheme.colorScheme.primary,
-                                titleContentColor = MaterialTheme.colorScheme.onPrimary,
+                                containerColor =  MaterialTheme.colorScheme.secondaryContainer,
+                                titleContentColor = MaterialTheme.colorScheme.onSecondaryContainer,
                             )
                         )
                     },
@@ -129,7 +136,7 @@ class MainActivity : ComponentActivity() {
 //                                .padding(bottom = extraPadding.coerceAtLeast(0.dp)),
                             shape = RoundedCornerShape(24.dp),
                             colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.surface
+                                containerColor = MaterialTheme.colorScheme.secondaryContainer
                             ),
                             onClick = {
                                 expanded.value = !expanded.value
@@ -177,17 +184,21 @@ class MainActivity : ComponentActivity() {
                                     this@MainActivity,
                                 )
 
-                                    Column(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(top = 24.dp, start = 20.dp, end = 20.dp)
-                                            .verticalScroll(rememberScrollState())
-                                    ) {
-                                        Text(
-                                            text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Massa vitae tortor condimentum lacinia quis vel. Sed nisi lacus sed viverra tellus. Porttitor leo a diam sollicitudin tempor id. Eleifend quam adipiscing vitae proin sagittis nisl rhoncus mattis. Quam id leo in vitae turpis massa sed. Congue nisi vitae suscipit tellus mauris a diam maecenas. Diam in arcu cursus euismod quis. Amet cursus sit amet dictum sit amet justo donec. Ornare arcu odio ut sem nulla. Leo vel orci porta non. Nascetur ridiculus mus mauris vitae ultricies. Convallis convallis tellus id interdum velit laoreet. Sagittis id consectetur purus ut faucibus pulvinar. Vitae justo eget magna fermentum iaculis eu non diam phasellus. Id eu nisl nunc mi ipsum faucibus vitae aliquet. Volutpat commodo sed egestas egestas fringilla phasellus faucibus scelerisque eleifend. Pretium quam vulputate dignissim suspendisse in est ante in nibh. Tristique magna sit amet purus. Non tellus orci ac auctor augue mauris augue. Diam sit amet nisl suscipit adipiscing bibendum est. Varius morbi enim nunc faucibus a pellentesque sit. Pharetra magna ac placerat vestibulum. Integer enim neque volutpat ac tincidunt. Id faucibus nisl tincidunt eget nullam non nisi est sit. Nam libero justo laoreet sit amet cursus sit amet. Aliquam nulla facilisi cras fermentum odio eu feugiat. Aliquam purus sit amet luctus venenatis lectus. Rhoncus aenean vel elit scelerisque mauris pellentesque pulvinar pellentesque. Vitae tempus quam pellentesque nec nam aliquam sem. Nulla malesuada pellentesque elit eget gravida cum sociis. Dui sapien eget mi proin sed. Id neque aliquam vestibulum morbi blandit cursus risus at. Commodo quis imperdiet massa tincidunt nunc pulvinar sapien. Mauris in aliquam sem fringilla ut morbi tincidunt. Elit ullamcorper dignissim cras tincidunt lobortis feugiat. Elit at imperdiet dui accumsan sit amet nulla facilisi. Eget mauris pharetra et ultrices. Pretium aenean"
-                                        )
+//                                CompositionLocalProvider(LocaConte) {
+//                                    Text("High Emphasis Text")
+//                                }
 
-                                    }
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(top = 26.dp, start = 20.dp, end = 20.dp)
+                                        .verticalScroll(rememberScrollState())
+                                ) {
+                                    Text(
+                                        text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Massa vitae tortor condimentum lacinia quis vel. Sed nisi lacus sed viverra tellus. Porttitor leo a diam sollicitudin tempor id. Eleifend quam adipiscing vitae proin sagittis nisl rhoncus mattis. Quam id leo in vitae turpis massa sed. Congue nisi vitae suscipit tellus mauris a diam maecenas. Diam in arcu cursus euismod quis. Amet cursus sit amet dictum sit amet justo donec. Ornare arcu odio ut sem nulla. Leo vel orci porta non. Nascetur ridiculus mus mauris vitae ultricies. Convallis convallis tellus id interdum velit laoreet. Sagittis id consectetur purus ut faucibus pulvinar. Vitae justo eget magna fermentum iaculis eu non diam phasellus. Id eu nisl nunc mi ipsum faucibus vitae aliquet. Volutpat commodo sed egestas egestas fringilla phasellus faucibus scelerisque eleifend. Pretium quam vulputate dignissim suspendisse in est ante in nibh. Tristique magna sit amet purus. Non tellus orci ac auctor augue mauris augue. Diam sit amet nisl suscipit adipiscing bibendum est. Varius morbi enim nunc faucibus a pellentesque sit. Pharetra magna ac placerat vestibulum. Integer enim neque volutpat ac tincidunt. Id faucibus nisl tincidunt eget nullam non nisi est sit. Nam libero justo laoreet sit amet cursus sit amet. Aliquam nulla facilisi cras fermentum odio eu feugiat. Aliquam purus sit amet luctus venenatis lectus. Rhoncus aenean vel elit scelerisque mauris pellentesque pulvinar pellentesque. Vitae tempus quam pellentesque nec nam aliquam sem. Nulla malesuada pellentesque elit eget gravida cum sociis. Dui sapien eget mi proin sed. Id neque aliquam vestibulum morbi blandit cursus risus at. Commodo quis imperdiet massa tincidunt nunc pulvinar sapien. Mauris in aliquam sem fringilla ut morbi tincidunt. Elit ullamcorper dignissim cras tincidunt lobortis feugiat. Elit at imperdiet dui accumsan sit amet nulla facilisi. Eget mauris pharetra et ultrices. Pretium aenean"
+                                    )
+
+                                }
                             }
                         }
                     }
@@ -296,15 +307,33 @@ fun NavigationDialog(
     // Dialog
     if (dialogShown.value && input.isNotEmpty()) {
 
+//        BackHandler {
+//            controller.popBackStack()
+//        }
+
         AlertDialog(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(top = 24.dp, bottom = 24.dp)
-                .wrapContentHeight(),
+                .wrapContentHeight()
+                .animateContentSize(
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioNoBouncy,
+                        stiffness = Spring.StiffnessLow
+                    )
+                ),
 //            onDismissRequest = { controller.popBackStack() },
             onDismissRequest = { dialogShown.value = false },
-            title = { Text(text = "title") },
+            title = { Text(text = "Download") },
             text = {
+
+//                if (seasonList.value.isEmpty()) CircularProgressIndicator(
+//                    modifier = Modifier.padding(
+//                        120.dp
+//                    )
+//                )
+
+
                 NavHost(navController = controller, startDestination = "SeasonPeakList") {
                     composable("SeasonPeakList") {
                         SeasonPeakList(
@@ -369,6 +398,16 @@ fun SeasonPeakList(
 ) {
 
     Column {
+
+        Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+            if (numberSeasonsList.isEmpty()) CircularProgressIndicator()
+        }
+
+//        BackHandler {
+//            controller.backQueue.removeIf { it.destination.route == "SeasonPeakList" }
+//            controller.popBackStack()
+//        }
+
         LazyColumn {
             items(numberSeasonsList) {
                 TextButton(
@@ -378,7 +417,7 @@ fun SeasonPeakList(
                         val index = numberSeasonsList.indexOf(it)
                         Log.d("INDEX", index.toString())
 
-                        var isHasOnlyOneSeasonToken: Boolean = false
+                        var isHasOnlyOneSeasonToken = false
 
                         viewModel.hasOnlyOneSeasonToken.observe(viewLifecycleOwner) {
                             isHasOnlyOneSeasonToken = it
@@ -417,22 +456,25 @@ fun SeriesPeakList(
     userAgent: String
 ) {
 
+//    BackHandler {
+//        controller.navigate("SeasonPeakList") {
+//            popUpTo(controller.backQueue.first().id) {
+//                inclusive = true
+//            }
+//        }
+//
+//        Log.d("NAVSTACK", controller.backQueue.first().toString())
+//
+//    }
+
+
     val checkedItem = mutableListOf<String>()
 
     Column {
 
-
-//        val allChecked = rememberSaveable { mutableStateOf(false) }
-
-//        Row {
-//            Checkbox(
-//                checked = allChecked.value,
-//                onCheckedChange = {
-//                    allChecked.value = !allChecked.value
-//                }
-//            )
-//            Text("Pick All")
-//        }
+        Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+            if (seriesList.isEmpty()) CircularProgressIndicator()
+        }
 
         LazyColumn {
             items(seriesList) { item ->
@@ -456,20 +498,17 @@ fun SeriesPeakList(
                                 val index = seriesList.indexOf(item)
                                 SeriesLinkSnapshotStateList.remove(linkSeriesList[index])
                             }
-
-//                            SeriesSnapshotStateList = checkedItem.toList()
-//                            checkedItems = checkedItem
-                            Log.d("CHECKED", SeriesSnapshotStateList.toList().toString())
-                            Log.d("CHECKED", SeriesLinkSnapshotStateList.toList().toString())
-
                         }
                     )
-                    Text(item)
+                    Text(
+                        item,
+                        fontSize = 18.sp,
+                        modifier = Modifier.padding(top = 11.dp)
+                    )
                 }
             }
         }
     }
-//                return checkedItems
 }
 
 @Composable
