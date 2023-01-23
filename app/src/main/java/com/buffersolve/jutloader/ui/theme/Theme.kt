@@ -19,16 +19,17 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.google.android.material.elevation.SurfaceColors
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Green80,
-    onPrimary = Green20,
-    primaryContainer = Green30,
-    onPrimaryContainer = Green90,
-    inversePrimary = Green40,
 
-    secondary = DarkGreen80,
-    onSecondary = DarkGreen20,
-    secondaryContainer = DarkGreen30,
-    onSecondaryContainer = Green90,
+    primary = GreenGrey60,
+    onPrimary = Color.Black,
+    primaryContainer = Green90,
+    onPrimaryContainer = Green10,
+    inversePrimary = Green80,
+
+    secondary = DarkGreen40,
+    onSecondary = Color.Black,
+    secondaryContainer = GreenGrey30,
+    onSecondaryContainer = DarkGreen90,
 
     tertiary = Violet80,
     onTertiary = Violet20,
@@ -54,7 +55,7 @@ private val DarkColorScheme = darkColorScheme(
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Green40,
+    primary = Green30,
     onPrimary = Color.White,
     primaryContainer = Green90,
     onPrimaryContainer = Green10,

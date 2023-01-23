@@ -80,25 +80,45 @@ class MainActivityViewModel : ViewModel() {
                 val season =
                     doc.select("h1[class=\"header_video allanimevideo anime_padding_for_title\"]")
                         .eachText()
-                val seasonSeries = doc.select("a[class=\"short-btn black video the_hildi\"]")
-                    .textNodes().map { it.toString() }
+
                 val seasonSeriesGreen = doc.select("a[class=\"short-btn green video the_hildi\"]")
                     .textNodes().map { it.toString() }
+                val seasonSeriesBlack = doc.select("a[class=\"short-btn black video the_hildi\"]")
+                    .textNodes().map { it.toString() }
+
 
                 val listSeries = mutableListOf<String>()
-                listSeries.addAll(seasonSeries)
                 listSeries.addAll(seasonSeriesGreen)
+                listSeries.addAll(seasonSeriesBlack)
                 listSeries.toList()
-                Log.d("SEASOLINK1", listSeries.toString())
+                Log.d("SEASOLINK1111", listSeries.toString())
 
                 // Links
-                val seasonSeriesLink = doc.select("a[class=\"short-btn black video the_hildi\"]")
-                val elements: Elements = seasonSeriesLink.select("a")
+//                val seasonSeriesLink = doc.select("a[class=\"short-btn black video the_hildi\"]")
+                val elementsGreen: Elements = doc.select("a[class=\"short-btn green video the_hildi\"]")
+                    .select("a")
+                val elementsBlack: Elements = doc.select("a[class=\"short-btn black video the_hildi\"]")
+                    .select("a")
 
+//                val listSeriesLink = mutableListOf<String>()
+//                listSeries.addAll(seasonSeriesGreen)
+//                listSeries.addAll(seasonSeriesBlack)
+//                listSeries.toList()
+//                Log.d("SEASOLINK1111", listSeries.toString())
+
+
+//                val elementsSeriaLinkGreen: Elements =
+//                    doc2.select("a[class=\"short-btn green video the_hildi\"]")
+//                        .select("a")
 
                 val elList = mutableListOf<String>()
 
-                elements.forEach {
+                elementsGreen.forEach {
+                    val attr = it.attr("href")
+                    elList.add(attr)
+                }
+
+                elementsBlack.forEach {
                     val attr = it.attr("href")
                     elList.add(attr)
                 }
@@ -117,21 +137,7 @@ class MainActivityViewModel : ViewModel() {
 //            doc.select("h2[class=\"b-b-title the-anime-season center films_title\"]").eachText()
 //        seasons.addAll(films)
 
-            ////
-
-            // Посилання на сезон
-
-
-            //
-
-
-            ////
-
-            // LiveData
-
-
 //        _events.emit(seasons)
-
 
         }
 
@@ -192,7 +198,7 @@ class MainActivityViewModel : ViewModel() {
         listOfLinks: List<String>
     ) = viewModelScope.launch(Dispatchers.IO) {
 
-        val hardcodeRes = 720
+        val hardcodeRes = 360
 
         val linkOfConcreteSeria = mutableListOf<String>()
         val listOfSeriesName = mutableListOf<String>()
@@ -241,8 +247,11 @@ class MainActivityViewModel : ViewModel() {
         names: MutableList<String>
     ) {
 
-        val deleteDublicateNames = LinkedHashSet(names).toMutableList()
-        val deleteDublicateLinks = LinkedHashSet(linkOfConcreteSeria).toMutableList()
+        val deleteDuplicateNames = LinkedHashSet(names).toMutableList()
+        val deleteDuplicateLinks = LinkedHashSet(linkOfConcreteSeria).toMutableList()
+
+        Log.d("WHYNOT", deleteDuplicateNames.toString())
+        Log.d("WHYNOT", deleteDuplicateLinks.toString())
 
         // DM
         val downloadManager: DownloadManager = context.getSystemService(
@@ -257,7 +266,7 @@ class MainActivityViewModel : ViewModel() {
         if (!directory.exists()) directory.mkdirs()
 
         // Request
-        for (url in deleteDublicateLinks) {
+        for (url in deleteDuplicateLinks) {
             val request = DownloadManager.Request(Uri.parse(url))
                 .addRequestHeader("User-Agent", userAgent)
                 .setAllowedOverMetered(true)
@@ -265,7 +274,7 @@ class MainActivityViewModel : ViewModel() {
                 .setDestinationUri(Uri.fromFile(
                     File(
                         directory,
-                        "${deleteDublicateNames[deleteDublicateLinks.indexOf(url)]}.mp4")
+                        "${deleteDuplicateNames[deleteDuplicateLinks.indexOf(url)]}.mp4")
                     )
                 )
 

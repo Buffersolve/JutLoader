@@ -5,47 +5,31 @@ import android.content.Context
 import android.content.ContextWrapper
 import android.content.pm.ActivityInfo
 import android.os.Bundle
-import android.os.Environment
 import android.util.Log
 import android.webkit.WebView
-import android.widget.ProgressBar
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.spring
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-//import androidx.compose.foundation.layout.ColumnScopeInstance.align
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ArrowDropDown
 import androidx.compose.material.icons.outlined.KeyboardArrowDown
 import androidx.compose.material.icons.outlined.KeyboardArrowUp
-import androidx.compose.material.icons.rounded.ArrowDropDown
-import androidx.compose.material.icons.rounded.KeyboardArrowDown
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.input.ScrollContainerInfo
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.semantics.Role.Companion.Image
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
@@ -58,7 +42,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.buffersolve.jutloader.ui.theme.JutloaderTheme
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
-import java.io.File
 
 lateinit var viewModel: MainActivityViewModel
 lateinit var webViewAgent: String
@@ -140,10 +123,7 @@ class MainActivity : ComponentActivity() {
                             ),
                             onClick = {
                                 expanded.value = !expanded.value
-//                                when (extraPadding) {
-//                                    270.dp -> expanded.value = true
-//                                    3000.dp -> expanded.value = false
-//                                }
+
                                 when (expanded.value) {
                                     true -> arrowIcon.value = Icons.Outlined.KeyboardArrowUp
                                     false -> arrowIcon.value = Icons.Outlined.KeyboardArrowDown
@@ -208,9 +188,7 @@ class MainActivity : ComponentActivity() {
         webViewAgent = WebView(this).settings.userAgentString
         Log.d("AGENT", webViewAgent)
 
-        viewModel = ViewModelProvider(this)[MainActivityViewModel::
-        class.java]
-
+        viewModel = ViewModelProvider(this)[MainActivityViewModel::class.java]
 
     }
 
@@ -294,7 +272,8 @@ fun NavigationDialog(
         onClick = {
             dialogShown.value = true
             if (input.isNotEmpty()) {
-                viewModel.networking(input, context, webViewAgent)
+                val search = "https://jut.su/$input"
+                viewModel.networking(search, context, webViewAgent)
             }
 
         },
@@ -411,6 +390,10 @@ fun SeasonPeakList(
         LazyColumn {
             items(numberSeasonsList) {
                 TextButton(
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        contentColor = MaterialTheme.colorScheme.onSurface
+                    ),
                     onClick = {
 //                    currentListIndex.value = (currentListIndex.value + 1) % lists.size
 
@@ -431,7 +414,7 @@ fun SeasonPeakList(
 
                         }
 
-                        Log.d("INDEX", linkSeriesList[index])
+//                        Log.d("INDEX", linkSeriesList[index])
 
                         controller.navigate("SeriesPeakList")
                     }
@@ -467,6 +450,8 @@ fun SeriesPeakList(
 //
 //    }
 
+//    Log.d("WHYNOT", seriesList.toString())
+//    Log.d("WHYNOT", linkSeriesList.toString())
 
     val checkedItem = mutableListOf<String>()
 
@@ -498,8 +483,11 @@ fun SeriesPeakList(
                                 val index = seriesList.indexOf(item)
                                 SeriesLinkSnapshotStateList.remove(linkSeriesList[index])
                             }
+//                            Log.d("WHYNOT", SeriesSnapshotStateList.toList().toString())
+//                            Log.d("WHYNOT", SeriesLinkSnapshotStateList.toList().toString())
                         }
                     )
+
                     Text(
                         item,
                         fontSize = 18.sp,
