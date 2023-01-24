@@ -3,7 +3,10 @@ package com.buffersolve.jutloader
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
+import android.content.Intent
 import android.content.pm.ActivityInfo
+import android.net.Uri
+import android.os.Build.VERSION.SDK_INT
 import android.os.Bundle
 import android.util.Log
 import android.webkit.WebView
@@ -27,11 +30,12 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -40,8 +44,13 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import coil.ImageLoader
+import coil.compose.rememberAsyncImagePainter
+import coil.decode.GifDecoder
+import coil.decode.ImageDecoderDecoder
+import coil.request.ImageRequest
+import coil.size.Size
 import com.buffersolve.jutloader.ui.theme.JutloaderTheme
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
 lateinit var viewModel: MainActivityViewModel
 lateinit var webViewAgent: String
@@ -57,19 +66,10 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
+
             JutloaderTheme {
                 // Prevent Landscape
                 Screen()
-
-//                val cardSize = remember {
-//                    mutableStateOf(270.dp)
-//                }
-
-                val deviceHeightDensity = LocalConfiguration.current.screenHeightDp.dp
-                val percentage = deviceHeightDensity.value * 0.83
-                val finalValueDp = percentage.dp
-
-                Log.d("density", finalValueDp.toString())
 
                 val arrowIcon = remember {
                     mutableStateOf(Icons.Outlined.KeyboardArrowDown)
@@ -78,39 +78,26 @@ class MainActivity : ComponentActivity() {
                 val expanded = remember { mutableStateOf(false) }
 
                 val extraPadding by animateDpAsState(
-                    if (expanded.value) finalValueDp else 270.dp,
+                    if (expanded.value) 400.dp else 270.dp,
                     animationSpec = spring(
                         dampingRatio = Spring.DampingRatioLowBouncy,
                         stiffness = Spring.StiffnessLow
                     )
                 )
 
-
-                val systemUiController = rememberSystemUiController()
-                systemUiController.setNavigationBarColor(
-                    color = MaterialTheme.colorScheme.background
-                )
-
-                val statusBarColor = MaterialTheme.colorScheme.secondaryContainer
-                SideEffect {
-                    systemUiController.setStatusBarColor(
-                        color = statusBarColor
-                    )
-                }
-
                 Scaffold(
                     topBar = {
                         TopAppBar(
                             title = { Text(text = "JutLoader") },
                             colors = TopAppBarDefaults.topAppBarColors(
-                                containerColor =  MaterialTheme.colorScheme.secondaryContainer,
+                                containerColor = MaterialTheme.colorScheme.secondaryContainer,
                                 titleContentColor = MaterialTheme.colorScheme.onSecondaryContainer,
                             )
                         )
                     },
                     content = {
 
-                        ElevatedCard(
+                        Card(
                             modifier = Modifier
                                 .padding(it)
                                 .padding(30.dp)
@@ -164,10 +151,6 @@ class MainActivity : ComponentActivity() {
                                     this@MainActivity,
                                 )
 
-//                                CompositionLocalProvider(LocaConte) {
-//                                    Text("High Emphasis Text")
-//                                }
-
                                 Column(
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -175,14 +158,58 @@ class MainActivity : ComponentActivity() {
                                         .verticalScroll(rememberScrollState())
                                 ) {
                                     Text(
-                                        text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Massa vitae tortor condimentum lacinia quis vel. Sed nisi lacus sed viverra tellus. Porttitor leo a diam sollicitudin tempor id. Eleifend quam adipiscing vitae proin sagittis nisl rhoncus mattis. Quam id leo in vitae turpis massa sed. Congue nisi vitae suscipit tellus mauris a diam maecenas. Diam in arcu cursus euismod quis. Amet cursus sit amet dictum sit amet justo donec. Ornare arcu odio ut sem nulla. Leo vel orci porta non. Nascetur ridiculus mus mauris vitae ultricies. Convallis convallis tellus id interdum velit laoreet. Sagittis id consectetur purus ut faucibus pulvinar. Vitae justo eget magna fermentum iaculis eu non diam phasellus. Id eu nisl nunc mi ipsum faucibus vitae aliquet. Volutpat commodo sed egestas egestas fringilla phasellus faucibus scelerisque eleifend. Pretium quam vulputate dignissim suspendisse in est ante in nibh. Tristique magna sit amet purus. Non tellus orci ac auctor augue mauris augue. Diam sit amet nisl suscipit adipiscing bibendum est. Varius morbi enim nunc faucibus a pellentesque sit. Pharetra magna ac placerat vestibulum. Integer enim neque volutpat ac tincidunt. Id faucibus nisl tincidunt eget nullam non nisi est sit. Nam libero justo laoreet sit amet cursus sit amet. Aliquam nulla facilisi cras fermentum odio eu feugiat. Aliquam purus sit amet luctus venenatis lectus. Rhoncus aenean vel elit scelerisque mauris pellentesque pulvinar pellentesque. Vitae tempus quam pellentesque nec nam aliquam sem. Nulla malesuada pellentesque elit eget gravida cum sociis. Dui sapien eget mi proin sed. Id neque aliquam vestibulum morbi blandit cursus risus at. Commodo quis imperdiet massa tincidunt nunc pulvinar sapien. Mauris in aliquam sem fringilla ut morbi tincidunt. Elit ullamcorper dignissim cras tincidunt lobortis feugiat. Elit at imperdiet dui accumsan sit amet nulla facilisi. Eget mauris pharetra et ultrices. Pretium aenean"
+                                        text = "Just type the name of anime you want to download",
+                                        textAlign = TextAlign.Center,
+                                        fontSize = 17.sp
                                     )
+//                                    Spacer(modifier = Modifier.size(12.dp))
+
+                                    Divider(
+                                        color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                        thickness = 1.dp,
+                                        modifier = Modifier.padding(top = 12.dp)
+                                    )
+
+                                    Row(Modifier.align(Alignment.CenterHorizontally)) {
+
+                                        Text(
+                                            text = "Source:",
+                                            fontSize = 17.sp,
+                                            modifier = Modifier.padding(top = 12.dp)
+                                        )
+
+                                        TextButton(onClick = {
+                                            val intent = Intent(
+                                                Intent.ACTION_VIEW,
+                                                Uri.parse("https://jut.su")
+                                            )
+                                            startActivity(intent)
+                                        }) {
+                                            Text(
+                                                text = "jut.su",
+                                                fontSize = 20.sp
+                                            )
+                                        }
+                                    }
+
+                                    Text(
+                                        text = "MIT License",
+                                        fontSize = 10.sp,
+                                        modifier = Modifier.align(Alignment.End)
+                                    )
+
 
                                 }
                             }
                         }
                     }
                 )
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.BottomCenter
+                    ) {
+                        GifImage()
+                    }
             }
         }
         webViewAgent = WebView(this).settings.userAgentString
@@ -211,7 +238,7 @@ fun TextField() {
             .fillMaxWidth()
             .padding(24.dp),
         value = text,
-        label = { Text("Input") },
+        label = { Text("Type the name of Anime") },
         onValueChange = {
             text = it
             input = it.text
@@ -278,7 +305,7 @@ fun NavigationDialog(
 
         },
     ) {
-        Text(text = "Select")
+        Text(text = "Search & Download")
     }
 
     val controller = rememberNavController()
@@ -378,7 +405,10 @@ fun SeasonPeakList(
 
     Column {
 
-        Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
             if (numberSeasonsList.isEmpty()) CircularProgressIndicator()
         }
 
@@ -457,7 +487,10 @@ fun SeriesPeakList(
 
     Column {
 
-        Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
             if (seriesList.isEmpty()) CircularProgressIndicator()
         }
 
@@ -497,6 +530,35 @@ fun SeriesPeakList(
             }
         }
     }
+}
+
+@Composable
+fun GifImage(
+    modifier: Modifier = Modifier,
+) {
+    val context = LocalContext.current
+    val imageLoader = ImageLoader.Builder(context)
+        .components {
+            if (SDK_INT >= 28) {
+                add(ImageDecoderDecoder.Factory())
+            } else {
+                add(GifDecoder.Factory())
+            }
+        }
+        .build()
+    Image(
+        painter = rememberAsyncImagePainter(
+            ImageRequest.Builder(context).data(data = R.drawable.naruto_gif).apply(block = {
+                size(Size.ORIGINAL)
+            }).build(), imageLoader = imageLoader
+        ),
+        contentDescription = null,
+        modifier = modifier
+//            .fillMaxWidth()
+            .size(200.dp)
+            .alpha(0.4f)
+//            .padding(top = 550.dp),
+    )
 }
 
 @Composable

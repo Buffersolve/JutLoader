@@ -14,9 +14,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
-import androidx.core.view.ViewCompat
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
-import com.google.android.material.elevation.SurfaceColors
+import androidx.core.view.WindowCompat
 
 private val DarkColorScheme = darkColorScheme(
 
@@ -115,9 +113,13 @@ fun JutloaderTheme(
     }
     val view = LocalView.current
     if (!view.isInEditMode) {
+        val currentWindow = (view.context as? Activity)?.window
+            ?: throw Exception("Not in an activity - unable to get Window reference")
+
         SideEffect {
-            (view.context as Activity).window.statusBarColor = colorScheme.primary.toArgb()
-            ViewCompat.getWindowInsetsController(view)?.isAppearanceLightStatusBars = darkTheme
+            (view.context as Activity).window.statusBarColor = colorScheme.secondaryContainer.toArgb()
+            (view.context as Activity).window.navigationBarColor = colorScheme.background.toArgb()
+            WindowCompat.getInsetsController(currentWindow, view).isAppearanceLightStatusBars = !darkTheme
         }
     }
 
