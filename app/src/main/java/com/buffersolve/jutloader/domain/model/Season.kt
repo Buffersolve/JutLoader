@@ -1,4 +1,4 @@
-package com.buffersolve.jutloader.model
+package com.buffersolve.jutloader.domain.model
 
 data class Season(
     val season: List<String>,

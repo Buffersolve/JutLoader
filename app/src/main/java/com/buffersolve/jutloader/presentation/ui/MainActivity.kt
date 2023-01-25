@@ -1,4 +1,4 @@
-package com.buffersolve.jutloader
+package com.buffersolve.jutloader.presentation.ui
 
 import android.app.Activity
 import android.content.Context
@@ -50,9 +50,12 @@ import coil.decode.GifDecoder
 import coil.decode.ImageDecoderDecoder
 import coil.request.ImageRequest
 import coil.size.Size
-import com.buffersolve.jutloader.ui.theme.JutloaderTheme
+import com.buffersolve.jutloader.R
+import com.buffersolve.jutloader.data.parser.getmethods.GetResolution
+import com.buffersolve.jutloader.presentation.ui.theme.JutloaderTheme
 
 lateinit var viewModel: MainActivityViewModel
+lateinit var viewModelUse: JutLoaderViewModel
 lateinit var webViewAgent: String
 
 val SeriesSnapshotStateList = SnapshotStateList<String>()
@@ -64,6 +67,7 @@ class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
 
         setContent {
 
@@ -216,6 +220,13 @@ class MainActivity : ComponentActivity() {
         Log.d("AGENT", webViewAgent)
 
         viewModel = ViewModelProvider(this)[MainActivityViewModel::class.java]
+        viewModelUse = ViewModelProvider(this)[JutLoaderViewModel::class.java]
+
+        ////
+//        Thread {
+//            GetResolution().execute("https://jut.su/berserk/season-4/episode-1.html", userAgent = webViewAgent)
+//        }.start()
+
 
     }
 
@@ -290,6 +301,21 @@ fun NavigationDialog(
     val dialogShown = remember {
         mutableStateOf(false)
     }
+
+    ///
+    //Clean
+//    val seasonListUse = remember {
+//        mutableStateOf(listOf<String>())
+//    }
+//    viewModelUse.season.observe(viewLifecycleOwner) {
+//        seasonListUse.value = it.season
+//        Log.d("CASE1", seasonListUse.value.toString())
+//
+//    }
+//
+//    viewModelUse.getSeasons("https://jut.su/$input", userAgent)
+
+
 
     // Btn
     OutlinedButton(
@@ -402,6 +428,8 @@ fun SeasonPeakList(
     userAgent: String,
     viewLifecycleOwner: LifecycleOwner
 ) {
+
+
 
     Column {
 
@@ -531,6 +559,77 @@ fun SeriesPeakList(
         }
     }
 }
+
+@Composable
+fun ResolutionPeakList(
+    controller: NavHostController,
+    numberSeasonsList: List<String>,
+    linkSeriesList: List<String>,
+    seriesList: List<String>,
+    userAgent: String,
+    viewLifecycleOwner: LifecycleOwner
+) {
+
+
+
+    Column {
+
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            if (numberSeasonsList.isEmpty()) CircularProgressIndicator()
+        }
+
+//        BackHandler {
+//            controller.backQueue.removeIf { it.destination.route == "SeasonPeakList" }
+//            controller.popBackStack()
+//        }
+
+        LazyColumn {
+            items(numberSeasonsList) {
+                TextButton(
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        contentColor = MaterialTheme.colorScheme.onSurface
+                    ),
+                    onClick = {
+//                    currentListIndex.value = (currentListIndex.value + 1) % lists.size
+
+                        val index = numberSeasonsList.indexOf(it)
+                        Log.d("INDEX", index.toString())
+
+//                        var isHasOnlyOneSeasonToken = false
+
+//                        viewModel.hasOnlyOneSeasonToken.observe(viewLifecycleOwner) {
+//                            isHasOnlyOneSeasonToken = it
+//                        }
+
+//                        if (!isHasOnlyOneSeasonToken) {
+                            viewModel.networkSeries(
+                                userAgent = userAgent,
+                                urlForSeries = linkSeriesList[index]
+                            )
+
+//                        }
+
+//                        Log.d("INDEX", linkSeriesList[index])
+
+//                        controller.navigate("SeriesPeakList")
+                    }
+                ) {
+                    Text(
+                        text = it,
+                        style = TextStyle(fontSize = 20.sp)
+                    )
+                }
+            }
+        }
+    }
+
+}
+
+
 
 @Composable
 fun GifImage(

@@ -1,31 +1,23 @@
-package com.buffersolve.jutloader
+package com.buffersolve.jutloader.presentation.ui
 
 import android.app.DownloadManager
 import android.content.Context
 import android.net.Uri
-import android.os.Build
 import android.os.Environment
 import android.util.Log
-import android.util.Log.d
 import androidx.activity.ComponentActivity
-import androidx.annotation.RequiresApi
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.buffersolve.jutloader.model.Season
-import com.buffersolve.jutloader.model.Seria
+import com.buffersolve.jutloader.domain.model.Season
+import com.buffersolve.jutloader.domain.model.Seria
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
-import org.jsoup.nodes.Element
 import org.jsoup.select.Elements
 import java.io.File
-import java.io.File.separator
-import java.nio.file.Files
-import java.nio.file.Path
-import java.nio.file.Paths
 
 class MainActivityViewModel : ViewModel() {
 

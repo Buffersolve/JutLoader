@@ -1,4 +1,4 @@
-package com.buffersolve.jutloader.ui.theme
+package com.buffersolve.jutloader.presentation.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
