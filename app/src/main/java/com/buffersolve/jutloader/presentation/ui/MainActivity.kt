@@ -1,5 +1,6 @@
 package com.buffersolve.jutloader.presentation.ui
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
@@ -11,6 +12,7 @@ import android.os.Bundle
 import android.util.Log
 import android.webkit.WebView
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
@@ -51,15 +53,19 @@ import coil.decode.ImageDecoderDecoder
 import coil.request.ImageRequest
 import coil.size.Size
 import com.buffersolve.jutloader.R
-import com.buffersolve.jutloader.data.parser.getmethods.GetResolution
+import com.buffersolve.jutloader.data.downloader.DownloaderImpl
+import com.buffersolve.jutloader.domain.usecase.DownloadUseCase
 import com.buffersolve.jutloader.presentation.ui.theme.JutloaderTheme
 
-lateinit var viewModel: MainActivityViewModel
-lateinit var viewModelUse: JutLoaderViewModel
+//lateinit var viewModel: MainActivityViewModel
+lateinit var viewModel: JutLoaderViewModel
 lateinit var webViewAgent: String
 
 val SeriesSnapshotStateList = SnapshotStateList<String>()
 val SeriesLinkSnapshotStateList = SnapshotStateList<String>()
+val DialogState = SnapshotStateList<Boolean>()
+
+val BackStackSnapshotStateList = SnapshotStateList<String>()
 var input: String = ""
 
 class MainActivity : ComponentActivity() {
@@ -68,6 +74,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        DialogState.add(false)
 
         setContent {
 
@@ -208,19 +215,19 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                 )
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.BottomCenter
-                    ) {
-                        GifImage()
-                    }
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.BottomCenter
+                ) {
+                    GifImage()
+                }
             }
         }
         webViewAgent = WebView(this).settings.userAgentString
         Log.d("AGENT", webViewAgent)
 
-        viewModel = ViewModelProvider(this)[MainActivityViewModel::class.java]
-        viewModelUse = ViewModelProvider(this)[JutLoaderViewModel::class.java]
+//        viewModel = ViewModelProvider(this)[MainActivityViewModel::class.java]
+        viewModel = ViewModelProvider(this)[JutLoaderViewModel::class.java]
 
         ////
 //        Thread {
@@ -257,6 +264,7 @@ fun TextField() {
     )
 }
 
+@SuppressLint("StateFlowValueCalledInComposition")
 @Composable
 fun NavigationDialog(
     viewLifecycleOwner: LifecycleOwner,
@@ -276,6 +284,7 @@ fun NavigationDialog(
         mutableStateOf(listOf<String>())
     }
     viewModel.season.observe(viewLifecycleOwner) {
+//        !!!!
         seasonLink.value = it.seasonLink
     }
 
@@ -283,38 +292,37 @@ fun NavigationDialog(
     val seriesList = remember {
         mutableStateOf(listOf<String>())
     }
-    viewModel.seria.observe(viewLifecycleOwner) {
+    viewModel.series.observe(viewLifecycleOwner) {
         seriesList.value = it.seria
-//        seriesList.value = it.seriaLink
-
-        Log.d("SERIES", seriesList.value.toString())
     }
 
     val seriesLink = remember {
         mutableStateOf(listOf<String>())
     }
-    viewModel.seria.observe(viewLifecycleOwner) {
+    viewModel.series.observe(viewLifecycleOwner) {
         seriesLink.value = it.seriaLink
-        Log.d("SERIESLINK", seriesLink.value.toString())
     }
 
-    val dialogShown = remember {
-        mutableStateOf(false)
+    val resList = remember {
+        mutableStateOf(listOf<String>())
+    }
+    viewModel.resolution.observe(viewLifecycleOwner) {
+        resList.value = it.res
     }
 
-    ///
-    //Clean
-//    val seasonListUse = remember {
+
+//    val specificLink = remember {
 //        mutableStateOf(listOf<String>())
 //    }
-//    viewModelUse.season.observe(viewLifecycleOwner) {
-//        seasonListUse.value = it.season
-//        Log.d("CASE1", seasonListUse.value.toString())
-//
+//    viewModel.specificLinks.observe(viewLifecycleOwner) {
+//        specificLink.value = it.linkToSpecificSeries
+//        Log.d("BABABABA111", it.linkToSpecificSeries.toString())
 //    }
-//
-//    viewModelUse.getSeasons("https://jut.su/$input", userAgent)
 
+
+//    val dialogShown = remember {
+//        mutableStateOf(false)
+//    }
 
 
     // Btn
@@ -323,10 +331,23 @@ fun NavigationDialog(
             .fillMaxWidth()
             .padding(start = 24.dp, end = 24.dp),
         onClick = {
-            dialogShown.value = true
+//            dialogShown.value = true
+            DialogState.add(true)
+
             if (input.isNotEmpty()) {
-                val search = "https://jut.su/$input"
-                viewModel.networking(search, context, webViewAgent)
+//                val search = "https://jut.su/$input"
+
+                viewModel.isOnlyOneSeason(input, webViewAgent)
+
+                viewModel.isOnlyOneSeason.observe(viewLifecycleOwner) {
+
+                    if (it) {
+                        viewModel.getOnlyOneSeasons(url = input, userAgent = webViewAgent)
+                    } else {
+                        viewModel.getSeasons(input, webViewAgent)
+                    }
+
+                }
             }
 
         },
@@ -336,8 +357,17 @@ fun NavigationDialog(
 
     val controller = rememberNavController()
 
+    val destinationChangedListener = remember {
+        mutableStateOf("")
+    }
+
+    controller.addOnDestinationChangedListener { _, destination, _ ->
+        destinationChangedListener.value = destination.route.toString()
+    }.toString()
+
     // Dialog
-    if (dialogShown.value && input.isNotEmpty()) {
+//    if (dialogShown.value && input.isNotEmpty()) {
+    if (DialogState.last() && input.isNotEmpty()) {
 
 //        BackHandler {
 //            controller.popBackStack()
@@ -355,7 +385,8 @@ fun NavigationDialog(
                     )
                 ),
 //            onDismissRequest = { controller.popBackStack() },
-            onDismissRequest = { dialogShown.value = false },
+//            onDismissRequest = { dialogShown.value = false },
+            onDismissRequest = { DialogState.add(false) },
             title = { Text(text = "Download") },
             text = {
 
@@ -365,6 +396,10 @@ fun NavigationDialog(
 //                    )
 //                )
 
+                BackHandler {
+                    DialogState.add(false)
+                    controller.popBackStack("SeasonPeakList", inclusive = false, saveState = false)
+                }
 
                 NavHost(navController = controller, startDestination = "SeasonPeakList") {
                     composable("SeasonPeakList") {
@@ -386,32 +421,46 @@ fun NavigationDialog(
                             userAgent,
                         )
                     }
+                    composable("ResolutionPeakList") {
+                        ResolutionPeakList(
+                            controller = controller,
+                            SeriesLinkSnapshotStateList,
+                            userAgent,
+                            viewLifecycleOwner,
+                            resList.value,
+                            context,
+//                            specificLink = specificLink.value
+                        )
+                    }
                 }
 
             },
             confirmButton = {
-                Log.d("CONFIRMBUTTON", SeriesSnapshotStateList.toString())
 
-                when (SeriesSnapshotStateList.isNotEmpty()) {
+                when (destinationChangedListener.value == "SeriesPeakList"
+                        && SeriesSnapshotStateList.isNotEmpty()
+                ) {
                     true -> TextButton(onClick = {
 
-                        viewModel.networkingResolutionAndFinal(
-                            context,
-                            userAgent = userAgent,
-                            listOfSeries = SeriesSnapshotStateList,
-                            listOfLinks = SeriesLinkSnapshotStateList
-                        )
+                        val url = SeriesLinkSnapshotStateList.first()
+                        viewModel.getResolution(url, userAgent)
 
-                        dialogShown.value = false
+                        controller.navigate("ResolutionPeakList")
 
-                    }) { Text(text = "Confirm") }
-                    else -> {
-                        Text(text = "")
+                    }) {
+                        Text(text = "Confirm")
                     }
+                    else -> Text(text = "")
+
                 }
             },
             dismissButton = {
-                TextButton(onClick = { dialogShown.value = false }) {
+                TextButton(onClick = {
+//                    dialogShown.value = false
+                    DialogState.add(false)
+                    controller.popBackStack("SeasonPeakList", inclusive = false, saveState = false)
+
+                }) {
                     Text(text = "Dismiss")
                 }
             }
@@ -429,8 +478,6 @@ fun SeasonPeakList(
     viewLifecycleOwner: LifecycleOwner
 ) {
 
-
-
     Column {
 
         Column(
@@ -440,11 +487,6 @@ fun SeasonPeakList(
             if (numberSeasonsList.isEmpty()) CircularProgressIndicator()
         }
 
-//        BackHandler {
-//            controller.backQueue.removeIf { it.destination.route == "SeasonPeakList" }
-//            controller.popBackStack()
-//        }
-
         LazyColumn {
             items(numberSeasonsList) {
                 TextButton(
@@ -453,26 +495,23 @@ fun SeasonPeakList(
                         contentColor = MaterialTheme.colorScheme.onSurface
                     ),
                     onClick = {
-//                    currentListIndex.value = (currentListIndex.value + 1) % lists.size
 
                         val index = numberSeasonsList.indexOf(it)
-                        Log.d("INDEX", index.toString())
 
-                        var isHasOnlyOneSeasonToken = false
-
-                        viewModel.hasOnlyOneSeasonToken.observe(viewLifecycleOwner) {
-                            isHasOnlyOneSeasonToken = it
+                        viewModel.isOnlyOneSeason.observe(viewLifecycleOwner) {
+                            if (it) {
+                                viewModel.getOnlyOneSeries(
+                                    url = input,
+                                    userAgent = userAgent
+                                )
+                            } else {
+                                viewModel.getSeries(
+                                    url = linkSeriesList[index],
+                                    userAgent = userAgent
+                                )
+                            }
                         }
 
-                        if (!isHasOnlyOneSeasonToken) {
-                            viewModel.networkSeries(
-                                userAgent = userAgent,
-                                urlForSeries = linkSeriesList[index]
-                            )
-
-                        }
-
-//                        Log.d("INDEX", linkSeriesList[index])
 
                         controller.navigate("SeriesPeakList")
                     }
@@ -497,24 +536,7 @@ fun SeriesPeakList(
     userAgent: String
 ) {
 
-//    BackHandler {
-//        controller.navigate("SeasonPeakList") {
-//            popUpTo(controller.backQueue.first().id) {
-//                inclusive = true
-//            }
-//        }
-//
-//        Log.d("NAVSTACK", controller.backQueue.first().toString())
-//
-//    }
-
-//    Log.d("WHYNOT", seriesList.toString())
-//    Log.d("WHYNOT", linkSeriesList.toString())
-
-    val checkedItem = mutableListOf<String>()
-
     Column {
-
         Column(
             modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -544,8 +566,6 @@ fun SeriesPeakList(
                                 val index = seriesList.indexOf(item)
                                 SeriesLinkSnapshotStateList.remove(linkSeriesList[index])
                             }
-//                            Log.d("WHYNOT", SeriesSnapshotStateList.toList().toString())
-//                            Log.d("WHYNOT", SeriesLinkSnapshotStateList.toList().toString())
                         }
                     )
 
@@ -563,14 +583,13 @@ fun SeriesPeakList(
 @Composable
 fun ResolutionPeakList(
     controller: NavHostController,
-    numberSeasonsList: List<String>,
     linkSeriesList: List<String>,
-    seriesList: List<String>,
     userAgent: String,
-    viewLifecycleOwner: LifecycleOwner
+    viewLifecycleOwner: LifecycleOwner,
+    resList: List<String>,
+    context: Context,
+//    specificLink: List<String>
 ) {
-
-
 
     Column {
 
@@ -578,44 +597,56 @@ fun ResolutionPeakList(
             modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            if (numberSeasonsList.isEmpty()) CircularProgressIndicator()
+            if (resList.isEmpty()) CircularProgressIndicator()
         }
 
 //        BackHandler {
-//            controller.backQueue.removeIf { it.destination.route == "SeasonPeakList" }
-//            controller.popBackStack()
+////            controller.backQueue.removeIf { it.destination.route == "SeasonPeakList" }
+//
+//            DialogState.add(false)
+//            controller.popBackStack("SeasonPeakList", inclusive = false, saveState = false)
+//
 //        }
 
+
+        var specificLink = listOf<String>()
+        var specificName = listOf<String>()
+
         LazyColumn {
-            items(numberSeasonsList) {
+            items(resList) {
                 TextButton(
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.surface,
                         contentColor = MaterialTheme.colorScheme.onSurface
                     ),
                     onClick = {
-//                    currentListIndex.value = (currentListIndex.value + 1) % lists.size
 
-                        val index = numberSeasonsList.indexOf(it)
+                        val index = resList.indexOf(it)
                         Log.d("INDEX", index.toString())
 
-//                        var isHasOnlyOneSeasonToken = false
+                        viewModel.getSpecificLinkSeries(
+                            linkSeriesList,
+                            userAgent,
+                            resList[index]
+                        )
 
-//                        viewModel.hasOnlyOneSeasonToken.observe(viewLifecycleOwner) {
-//                            isHasOnlyOneSeasonToken = it
-//                        }
+                        viewModel.specificLinks.observe(viewLifecycleOwner) {
+                            specificLink = it.linkToSpecificSeries
+                            specificName = it.listOfSeriesName
 
-//                        if (!isHasOnlyOneSeasonToken) {
-                            viewModel.networkSeries(
-                                userAgent = userAgent,
-                                urlForSeries = linkSeriesList[index]
-                            )
+                            when (specificLink.isNotEmpty()) {
+                                true -> viewModel.download(
+                                    context = context,
+                                    userAgent = userAgent,
+                                    linkOfConcreteSeries = specificLink.toMutableList(),
+                                    names = specificName.toMutableList()
+                                )
+                                else -> {}
+                            }
+                        }
 
-//                        }
+                        DialogState.add(false)
 
-//                        Log.d("INDEX", linkSeriesList[index])
-
-//                        controller.navigate("SeriesPeakList")
                     }
                 ) {
                     Text(
@@ -625,11 +656,11 @@ fun ResolutionPeakList(
                 }
             }
         }
+
+
     }
 
 }
-
-
 
 @Composable
 fun GifImage(
