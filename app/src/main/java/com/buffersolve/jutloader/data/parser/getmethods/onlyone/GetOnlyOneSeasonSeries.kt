@@ -1,12 +1,12 @@
 package com.buffersolve.jutloader.data.parser.getmethods.onlyone
 
 import com.buffersolve.jutloader.data.parser.Parser
-import com.buffersolve.jutloader.domain.model.Seria
+import com.buffersolve.jutloader.domain.model.Series
 import org.jsoup.select.Elements
 
 class GetOnlyOneSeasonSeries {
 
-    fun execute(url: String, userAgent: String): Seria {
+    fun execute(url: String, userAgent: String): Series {
 
         val doc = Parser.execute(
             url = url,
@@ -43,7 +43,7 @@ class GetOnlyOneSeasonSeries {
             elList.add(attr)
         }
 
-        return Seria(seria = listSeries, seriaLink = elList)
+        return Series(seria = listSeries, seriaLink = elList)
 
 
     }

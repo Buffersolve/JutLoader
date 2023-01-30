@@ -1,10 +1,7 @@
 package com.buffersolve.jutloader.data.parser.getmethods.onlyone
 
-import android.util.Log
 import com.buffersolve.jutloader.data.parser.Parser
 import com.buffersolve.jutloader.domain.model.Season
-import com.buffersolve.jutloader.domain.model.Seria
-import org.jsoup.select.Elements
 
 class GetOnlyOneSeason {
 

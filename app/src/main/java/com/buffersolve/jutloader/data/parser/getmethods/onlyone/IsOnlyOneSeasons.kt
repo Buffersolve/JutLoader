@@ -1,12 +1,6 @@
 package com.buffersolve.jutloader.data.parser.getmethods.onlyone
 
-import android.util.Log
 import com.buffersolve.jutloader.data.parser.Parser
-import com.buffersolve.jutloader.domain.model.Season
-import com.buffersolve.jutloader.domain.model.Seria
-import org.jsoup.Jsoup
-import org.jsoup.nodes.Document
-import org.jsoup.select.Elements
 
 class IsOnlyOneSeasons {
 
@@ -17,13 +11,13 @@ class IsOnlyOneSeasons {
             userAgent = userAgent
         )
 
-        val isHasOnlyOneSeasonToken: Boolean =
+        val isHasOnlyOneSeason: Boolean =
             when (doc.select("div[class=\"the_invis\"]").size > 0) {
-            true -> false
-            false -> true
-        }
+                true -> false
+                false -> true
+            }
 
-            return isHasOnlyOneSeasonToken
+        return isHasOnlyOneSeason
 
     }
 

@@ -3,10 +3,7 @@ package com.buffersolve.jutloader.data.repository
 import com.buffersolve.jutloader.data.parser.getmethods.*
 import com.buffersolve.jutloader.data.parser.getmethods.onlyone.GetOnlyOneSeason
 import com.buffersolve.jutloader.data.parser.getmethods.onlyone.GetOnlyOneSeasonSeries
-import com.buffersolve.jutloader.domain.model.Resolution
-import com.buffersolve.jutloader.domain.model.Season
-import com.buffersolve.jutloader.domain.model.Seria
-import com.buffersolve.jutloader.domain.model.SpecificSeries
+import com.buffersolve.jutloader.domain.model.*
 import com.buffersolve.jutloader.domain.repository.Repository
 
 class RepositoryImpl : Repository {
@@ -15,7 +12,7 @@ class RepositoryImpl : Repository {
         return GetSeasons().execute(url, userAgent)
     }
 
-    override fun getSeriesUseCase(url: String, userAgent: String): Seria {
+    override fun getSeriesUseCase(url: String, userAgent: String): Series {
         return GetSeries().execute(url, userAgent)
     }
 
@@ -23,7 +20,7 @@ class RepositoryImpl : Repository {
         return GetOnlyOneSeason().execute(url, userAgent)
     }
 
-    override fun getOnlyOneSeriesUseCase(url: String, userAgent: String): Seria {
+    override fun getOnlyOneSeriesUseCase(url: String, userAgent: String): Series {
         return GetOnlyOneSeasonSeries().execute(url, userAgent)
     }
 

@@ -2,12 +2,12 @@ package com.buffersolve.jutloader.data.parser.getmethods
 
 import android.util.Log
 import com.buffersolve.jutloader.data.parser.Parser
-import com.buffersolve.jutloader.domain.model.Seria
+import com.buffersolve.jutloader.domain.model.Series
 import org.jsoup.select.Elements
 
 class GetSeries {
 
-    fun execute(url: String, userAgent: String): Seria {
+    fun execute(url: String, userAgent: String): Series {
 
         val doc = Parser.execute(
             url = url,
@@ -44,7 +44,7 @@ class GetSeries {
             elementsSeriaLinkList.add(attr)
         }
 
-        return Seria(list, elementsSeriaLinkList)
+        return Series(list, elementsSeriaLinkList)
 
     }
 
