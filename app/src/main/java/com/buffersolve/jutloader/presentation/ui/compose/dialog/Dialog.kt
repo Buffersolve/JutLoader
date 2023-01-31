@@ -7,7 +7,6 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material3.*
@@ -30,6 +29,7 @@ import com.buffersolve.jutloader.presentation.ui.compose.dialog.lists.SeriesPeak
 fun NavigationDialog(
     viewLifecycleOwner: LifecycleOwner,
     userAgent: String,
+//    exceptionState: MutableState<String>,
     context: Context
 ) {
 
@@ -56,49 +56,23 @@ fun NavigationDialog(
     }
 
     // Exception
-    val exceptionState = remember {
-        mutableStateOf("")
-    }
     Parser.exception.observe(viewLifecycleOwner) {
-        exceptionState.value = it.toString()
-        seasonList.value = listOf(it.message.toString())
-    }
-
-    // Btn
-    OutlinedButton(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = 24.dp, end = 24.dp),
-        onClick = {
-            DialogState.add(true)
-
-            if (input.isNotEmpty()) {
-                viewModel.isOnlyOneSeason(input, webViewAgent)
-                viewModel.isOnlyOneSeason.observe(viewLifecycleOwner) {
-                    if (it && exceptionState.value.isEmpty()) {
-                        viewModel.getOnlyOneSeasons(url = input, userAgent = webViewAgent)
-                    } else if (!it && exceptionState.value.isEmpty()) {
-                        viewModel.getSeasons(input, webViewAgent)
-                    }
-                }
-            }
-        },
-    ) {
-        Text(text = "Search & Download")
+        ExceptionState.add(it)
+        if (it.isNotEmpty()) seasonList.value = listOf(it)
     }
 
     val controller = rememberNavController()
 
+    // Destination Listener
     val destinationChangedListener = remember {
         mutableStateOf("")
     }
-
     controller.addOnDestinationChangedListener { _, destination, _ ->
         destinationChangedListener.value = destination.route.toString()
     }.toString()
 
-    if (DialogState.last() && input.isNotEmpty()) {
-
+    // Dialog
+    if (DialogState.last()) {
         AlertDialog(
             modifier = Modifier
                 .fillMaxSize()
@@ -118,7 +92,7 @@ fun NavigationDialog(
                 )
             },
             text = {
-
+                // BackHandler
                 BackHandler {
                     DialogState.add(false)
                     controller.popBackStack("SeasonPeakList", inclusive = false, saveState = false)
@@ -168,21 +142,19 @@ fun NavigationDialog(
                         && SeriesSnapshotStateList.isNotEmpty()
                 ) {
                     true -> TextButton(onClick = {
-
                         val url = SeriesLinkSnapshotStateList.first()
                         viewModel.getResolution(url, userAgent)
 
                         controller.navigate("ResolutionPeakList")
-
                     }) {
                         Text(text = "Confirm")
                     }
                     else -> Text(text = "")
-
                 }
             },
             dismissButton = {
                 TextButton(onClick = {
+
                     DialogState.add(false)
                     controller.popBackStack("SeasonPeakList", inclusive = false, saveState = false)
                     SeriesSnapshotStateList.clear()

@@ -53,10 +53,10 @@ class JutLoaderViewModel(
 //        throwable.printStackTrace()
 //    }
 
-    init {
-        checkInternetConnection()
-        Log.d("internet111", checkInternetConnection().toString())
-    }
+//    init {
+//        checkInternetConnection()
+//
+//    }
 
 
     // Seasons List
@@ -123,8 +123,6 @@ class JutLoaderViewModel(
         userAgent: String
     ) = viewModelScope.launch(Dispatchers.IO) {
 
-
-
         if (checkInternetConnection()) {
             val res = GetResolutionUseCase(repository).execute(url, userAgent)
             _resolution.postValue(res)
@@ -140,7 +138,6 @@ class JutLoaderViewModel(
         userAgent: String,
         resolution: String
     ) = viewModelScope.launch(Dispatchers.IO) {
-
 
         if (checkInternetConnection()) {
             val specificLinks =

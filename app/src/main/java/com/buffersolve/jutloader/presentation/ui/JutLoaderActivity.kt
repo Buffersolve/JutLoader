@@ -5,6 +5,7 @@ import android.content.Intent
 import android.net.ConnectivityManager
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.webkit.WebView
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -30,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.*
 import com.buffersolve.jutloader.R
+import com.buffersolve.jutloader.presentation.ui.compose.ButtonSearch
 import com.buffersolve.jutloader.presentation.ui.compose.GifImage
 import com.buffersolve.jutloader.presentation.ui.theme.JutloaderTheme
 import com.buffersolve.jutloader.presentation.ui.compose.TextField
@@ -42,6 +44,7 @@ lateinit var webViewAgent: String
 val SeriesSnapshotStateList = SnapshotStateList<String>()
 val SeriesLinkSnapshotStateList = SnapshotStateList<String>()
 val DialogState = SnapshotStateList<Boolean>()
+val ExceptionState = SnapshotStateList<String>()
 var input: String = ""
 
 class JutLoaderActivity : ComponentActivity() {
@@ -49,6 +52,7 @@ class JutLoaderActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
 
         setContent {
             JutloaderTheme {
@@ -134,10 +138,17 @@ class JutLoaderActivity : ComponentActivity() {
                                 // Text Field
                                 TextField()
 
+                                // Btn
+                                ButtonSearch(
+                                    viewLifecycleOwner = this@JutLoaderActivity,
+//                                    exceptionState = exceptionState,
+                                )
+
                                 // Dialog with choice
                                 NavigationDialog(
                                     viewLifecycleOwner = this@JutLoaderActivity,
                                     userAgent = webViewAgent,
+//                                    exceptionState = exceptionState,
                                     context = this@JutLoaderActivity,
                                 )
 
@@ -211,23 +222,21 @@ class JutLoaderActivity : ComponentActivity() {
         if (connectivityService is ConnectivityManager) {
             val viewModelProviderFactory =
                 JutLoaderViewModelFactory(application, connectivityService)
-            viewModel = ViewModelProvider(this, viewModelProviderFactory)[JutLoaderViewModel::class.java]
+            viewModel =
+                ViewModelProvider(this, viewModelProviderFactory)[JutLoaderViewModel::class.java]
         } else {
             Toast.makeText(this, "Smth with connectivityService", Toast.LENGTH_LONG).show()
+            Log.d("LOGConnectivityService", "Smth with connectivityService")
         }
-
-
     }
-
 }
 
 // Compose UI
-
 @Preview(showBackground = true)
 @Composable
 fun DefaultPreview() {
     JutloaderTheme {
-        TextField()
+//        TextField()
     }
 }
 

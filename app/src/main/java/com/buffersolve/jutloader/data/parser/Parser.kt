@@ -9,20 +9,22 @@ import java.net.SocketTimeoutException
 
 object Parser {
 
-    private val _exception: MutableLiveData<Exception> = MutableLiveData()
-    val exception: LiveData<Exception>
-        get() = _exception
+    private val exceptionPrivate: MutableLiveData<String> = MutableLiveData()
+    val exception: LiveData<String>
+        get() = exceptionPrivate
 
     fun execute(url: String, userAgent: String): Document {
         return try {
-            Jsoup.connect("https://jut.su/$url")
+            val doc = Jsoup.connect("https://jut.su/$url")
                 .userAgent(userAgent)
                 .get()
+            exceptionPrivate.postValue("")
+            doc
         } catch (e: HttpStatusException) {
-            _exception.postValue(e)
+            exceptionPrivate.postValue(e.message)
             Document("")
         } catch (e: SocketTimeoutException) {
-            _exception.postValue(e)
+            exceptionPrivate.postValue(e.message)
             Document("")
         }
     }
