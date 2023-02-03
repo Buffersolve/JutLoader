@@ -5,11 +5,15 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.net.NetworkCapabilities.*
+import android.net.Uri
+import android.os.Handler
 import android.util.Log
 import androidx.lifecycle.*
 import com.buffersolve.jutloader.JutLoaderApplication
+import com.buffersolve.jutloader.data.contentprovider.DownloadProgressObserver
 import com.buffersolve.jutloader.data.downloader.DownloaderImpl
 import com.buffersolve.jutloader.data.parser.getmethods.onlyone.IsOnlyOneSeasons
+import com.buffersolve.jutloader.data.receiver.DownloadCompletedReceiver
 import com.buffersolve.jutloader.data.repository.RepositoryImpl
 import com.buffersolve.jutloader.domain.model.Resolution
 import com.buffersolve.jutloader.domain.model.Season
@@ -46,18 +50,11 @@ class JutLoaderViewModel(
     val isOnlyOneSeason: LiveData<Boolean>
         get() = _isOnlyOneSeason
 
+    private val _progress: MutableLiveData<Long> = MutableLiveData()
+    val progress: LiveData<Long>
+        get() = _progress
+
     private val repository = RepositoryImpl()
-//    private val repository = DownloaderImpl()
-
-//    val coroutineExceptionHandler = CoroutineExceptionHandler{_, throwable ->
-//        throwable.printStackTrace()
-//    }
-
-//    init {
-//        checkInternetConnection()
-//
-//    }
-
 
     // Seasons List
     fun getSeasons(
@@ -72,7 +69,6 @@ class JutLoaderViewModel(
         } else {
             _season.postValue(Season(listOf("No internet connection"), mutableListOf()))
         }
-
     }
 
     // Series List
@@ -100,7 +96,6 @@ class JutLoaderViewModel(
         } else {
             _season.postValue(Season(listOf("No internet connection"), mutableListOf()))
         }
-
     }
 
     // Series List
@@ -129,7 +124,6 @@ class JutLoaderViewModel(
         } else {
             _season.postValue(Season(listOf("No internet connection"), mutableListOf()))
         }
-
     }
 
     // Specific Link Series List
@@ -146,7 +140,6 @@ class JutLoaderViewModel(
         } else {
             _season.postValue(Season(listOf("No internet connection"), mutableListOf()))
         }
-
     }
 
     fun isOnlyOneSeason(
@@ -173,6 +166,29 @@ class JutLoaderViewModel(
             linkOfConcreteSeria = linkOfConcreteSeries,
             names = names
         )
+
+        // TODO
+//        val id = DownloaderImpl(context).download()
+    }
+
+    fun progressObserve(
+        viewLifecycleOwner: LifecycleOwner,
+        context: Context,
+        handler: Handler,
+        downloadId: Long
+    ) {
+        val downloadObserver = DownloadProgressObserver(context, handler, downloadId)
+        val contentResolver = context.contentResolver
+        contentResolver.registerContentObserver(
+            Uri.parse("content://downloads/all_downloads/$downloadId"),
+            true,
+            downloadObserver
+        )
+
+        downloadObserver.progress.observe(viewLifecycleOwner) {
+            _progress.postValue(it)
+        }
+
     }
 
     private fun checkInternetConnection(): Boolean {

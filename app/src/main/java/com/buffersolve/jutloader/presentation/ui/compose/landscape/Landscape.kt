@@ -29,6 +29,6 @@ fun Context.findActivity(): Activity? = when (this) {
 }
 
 @Composable
-fun Screen() {
+fun PortraitScreenOnly() {
     LockScreenOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT)
 }

@@ -7,7 +7,7 @@ class DownloadUseCase(
 ) {
 
     fun execute(userAgent: String, linkOfConcreteSeria: List<String>, names: MutableList<String>) {
-        return downloader.download(userAgent, linkOfConcreteSeria, names)
+        downloader.download(userAgent, linkOfConcreteSeria, names)
     }
 
 }

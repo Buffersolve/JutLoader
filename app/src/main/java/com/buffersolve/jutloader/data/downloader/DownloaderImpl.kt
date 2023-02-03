@@ -5,6 +5,7 @@ import android.content.Context
 import android.net.Uri
 import android.util.Log
 import androidx.activity.ComponentActivity
+import com.buffersolve.jutloader.data.contentprovider.DownloadProgressObserver
 import com.buffersolve.jutloader.data.util.CreateDirectory
 import com.buffersolve.jutloader.domain.downloader.Downloader
 import java.io.File
@@ -18,17 +19,21 @@ class DownloaderImpl(
         ComponentActivity.DOWNLOAD_SERVICE
     ) as DownloadManager
 
-
     override fun download(
 //        url: List<String>,
         userAgent: String,
         linkOfConcreteSeria: List<String>,
         names: MutableList<String>
-    ) {
+    ): Long {
         val directory = CreateDirectory().createDirectory()
 
         val deleteDuplicateNames = LinkedHashSet(names).toMutableList()
         val deleteDuplicateLinks = LinkedHashSet(linkOfConcreteSeria).toMutableList()
+
+        val requestList = mutableListOf<Long>()
+        var requestLong = 1L
+
+
 
         for (url in deleteDuplicateLinks) {
             val request = DownloadManager.Request(Uri.parse(url))
@@ -44,9 +49,15 @@ class DownloaderImpl(
                     )
                 )
 
-            downloadManager.enqueue(request)
+//            val enqueue = downloadManager.enqueue(request)
+            requestLong = downloadManager.enqueue(request)
+//            requestList.add(enqueue)
+//            return enqueue
         }
 
+        return requestLong
     }
+
+
 
 }

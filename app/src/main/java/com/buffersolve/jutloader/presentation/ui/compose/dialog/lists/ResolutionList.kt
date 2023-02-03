@@ -1,7 +1,13 @@
 package com.buffersolve.jutloader.presentation.ui.compose.dialog.lists
 
+import android.app.DownloadManager
+import android.content.ContentResolver
 import android.content.Context
+import android.net.Uri
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
+import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
@@ -14,7 +20,11 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.NavHostController
+import com.buffersolve.jutloader.data.contentprovider.DownloadProgressObserver
+import com.buffersolve.jutloader.data.downloader.DownloaderImpl
+import com.buffersolve.jutloader.data.receiver.DownloadCompletedReceiver
 import com.buffersolve.jutloader.presentation.ui.DialogState
+import com.buffersolve.jutloader.presentation.ui.DownloadProgressBar
 import com.buffersolve.jutloader.presentation.ui.viewModel
 
 @Composable
@@ -60,14 +70,41 @@ fun ResolutionPeakList(
                             specificLink = it.linkToSpecificSeries
                             specificName = it.listOfSeriesName
 
-                            when (specificLink.isNotEmpty()) {
-                                true -> viewModel.download(
-                                    context = context,
+                            if (specificLink.isNotEmpty()) {
+//                                val id = viewModel.download(
+//                                    context = context,
+//                                    userAgent = userAgent,
+//                                    linkOfConcreteSeries = specificLink.toMutableList(),
+//                                    names = specificName.toMutableList()
+//                                )
+
+                                val id = DownloaderImpl(context).download (
                                     userAgent = userAgent,
-                                    linkOfConcreteSeries = specificLink.toMutableList(),
+                                    linkOfConcreteSeria = specificLink.toMutableList(),
                                     names = specificName.toMutableList()
                                 )
-                                else -> {}
+
+                                val handler = Handler(Looper.getMainLooper())
+                                viewModel.progressObserve(
+                                    viewLifecycleOwner, context, handler, id
+                                )
+
+//                                DownloadProgressObserver(context, handler, id).onChange()
+
+//                                val downloadManager: DownloadManager = context.getSystemService(
+//                                    ComponentActivity.DOWNLOAD_SERVICE
+//                                ) as DownloadManager
+//
+//                                val uri = downloadManager.getUriForDownloadedFile(id)
+
+                                val downloadObserver = DownloadProgressObserver(context, handler, id)
+                                val contentResolver = context.contentResolver
+
+                                contentResolver.registerContentObserver(Uri.parse("content://downloads/all_downloads/$id"), true, downloadObserver)
+
+
+                            } else {
+
                             }
                         }
 
@@ -77,6 +114,8 @@ fun ResolutionPeakList(
                             inclusive = false,
                             saveState = false
                         )
+
+
 
                     }
                 ) {

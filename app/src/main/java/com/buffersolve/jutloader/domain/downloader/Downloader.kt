@@ -6,5 +6,5 @@ interface Downloader {
         userAgent: String,
         linkOfConcreteSeria: List<String>,
         names: MutableList<String>
-    )
+    ): Long
 }
