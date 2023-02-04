@@ -4,7 +4,7 @@ interface Downloader {
 
     fun download(
         userAgent: String,
-        linkOfConcreteSeria: List<String>,
+        linkOfConcreteSeries: List<String>,
         names: MutableList<String>
     ): Long
 }

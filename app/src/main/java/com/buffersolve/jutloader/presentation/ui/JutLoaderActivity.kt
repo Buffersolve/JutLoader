@@ -25,6 +25,7 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
@@ -33,7 +34,6 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat.startActivity
 import androidx.lifecycle.*
 import com.buffersolve.jutloader.R
-import com.buffersolve.jutloader.data.contentprovider.DownloadProgressObserver
 import com.buffersolve.jutloader.presentation.ui.compose.ButtonSearch
 import com.buffersolve.jutloader.presentation.ui.compose.GifImage
 import com.buffersolve.jutloader.presentation.ui.theme.JutloaderTheme
@@ -61,19 +61,14 @@ class JutLoaderActivity : ComponentActivity() {
                 // Prevent Landscape
                 PortraitScreenOnly()
 
-                // Top App Bar && Card
-                TopAppBarAndCard(
-                    this@JutLoaderActivity,
-                    this
+                // Top App Bar && Card && ProgressBar
+                BarCardProgress(
+                    viewLifecycleOwner = this@JutLoaderActivity,
+                    context = this
                 )
 
                 // Naruto Bottom
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.BottomCenter
-                ) {
-                    GifImage()
-                }
+                GifImage()
             }
         }
 
@@ -92,21 +87,21 @@ class JutLoaderActivity : ComponentActivity() {
         }
     }
 
-//    val downlo =
 }
 
 // Compose UI
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TopAppBarAndCard(
+fun BarCardProgress(
     viewLifecycleOwner: LifecycleOwner,
     context: Context
 ) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(text = "JutLoader") },
+                title = {
+                    Text(text = "JutLoader")
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.secondaryContainer,
                     titleContentColor = MaterialTheme.colorScheme.onSecondaryContainer,
@@ -119,29 +114,25 @@ fun TopAppBarAndCard(
             DialogState.add(false)
 
             // Content Card
-            Card(
-                scaffoldPadding = it,
-                viewLifecycleOwner = viewLifecycleOwner,
-                context = context
-            )
+            Column {
+                Card(
+                    scaffoldPadding = it,
+                    viewLifecycleOwner = viewLifecycleOwner,
+                    context = context
+                )
 
-            val progressState = remember {
-                mutableStateOf(0L)
+                val progressState = remember {
+                    mutableStateOf(0L)
+                }
+                viewModel.progress.observe(viewLifecycleOwner) { prgrs ->
+                    progressState.value = prgrs
+                }
+                // Progress
+                DownloadProgressBar(
+                    progressState.value * 0.01.toFloat()
+                )
             }
-            viewModel.progress.observe(viewLifecycleOwner) { prgrs ->
-                progressState.value = prgrs
-                Log.d("LONGSTATE", prgrs.toFloat().toString())
 
-            }
-            // Progress
-            DownloadProgressBar(
-                progressState.value * 0.01.toFloat()
-            )
-
-//            LinearProgressIndicator(
-//                modifier = Modifier.padding(top = 300.dp).fillMaxWidth(),
-//                progress = progressState.value * 0.01.toFloat()
-//            )
         }
     )
 }
@@ -171,7 +162,7 @@ fun Card(
     Card(
         modifier = Modifier
             .padding(scaffoldPadding)
-            .padding(30.dp)
+            .padding(top = 30.dp, start = 30.dp, end = 30.dp)
             .fillMaxWidth()
             .size(extraPadding.coerceAtLeast(0.dp)),
         shape = RoundedCornerShape(24.dp),
@@ -212,6 +203,7 @@ fun Card(
                 context = context,
             )
 
+            // CardInfo
             CardInfo(
                 context = context
             )
@@ -266,7 +258,7 @@ fun CardInfo(
             modifier = Modifier.padding(top = 12.dp)
         )
 
-        Row(Modifier.align(Alignment.CenterHorizontally)) {
+        Row(Modifier.align(CenterHorizontally)) {
 
             Text(
                 text = "Source:",
@@ -302,12 +294,9 @@ fun DownloadProgressBar(progress: Float) {
 
     Card(
         modifier = Modifier
-//            .padding(scaffoldPadding)
             .padding(30.dp)
-            .padding(top = 500.dp)
             .fillMaxWidth()
-//            .size(extraPadding.coerceAtLeast(0.dp)),
-            .size(65.dp.coerceAtLeast(0.dp)),
+            .size(70.dp.coerceAtLeast(0.dp)),
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.secondaryContainer
@@ -321,11 +310,14 @@ fun DownloadProgressBar(progress: Float) {
             Alignment.Center
         ) {
             Column {
-                Text(modifier = Modifier.align(CenterHorizontally), text = "Download Progress", )
+                Text(modifier = Modifier.align(CenterHorizontally), text = "Download Progress")
                 LinearProgressIndicator(
-                    modifier = Modifier.padding(top = 10.dp),
+                    modifier = Modifier
+                        .padding(top = 10.dp, start = 40.dp, end = 40.dp)
+                        .fillMaxWidth()
+                        .alpha(0.8F),
                     progress = progress,
-                    color = MaterialTheme.colorScheme.primary
+                    trackColor = MaterialTheme.colorScheme.onSecondaryContainer,
                 )
             }
 

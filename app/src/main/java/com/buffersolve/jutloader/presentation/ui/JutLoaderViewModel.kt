@@ -3,31 +3,32 @@ package com.buffersolve.jutloader.presentation.ui
 import android.app.Application
 import android.content.Context
 import android.net.ConnectivityManager
-import android.net.NetworkCapabilities
 import android.net.NetworkCapabilities.*
 import android.net.Uri
 import android.os.Handler
-import android.util.Log
 import androidx.lifecycle.*
-import com.buffersolve.jutloader.JutLoaderApplication
 import com.buffersolve.jutloader.data.contentprovider.DownloadProgressObserver
 import com.buffersolve.jutloader.data.downloader.DownloaderImpl
 import com.buffersolve.jutloader.data.parser.getmethods.onlyone.IsOnlyOneSeasons
-import com.buffersolve.jutloader.data.receiver.DownloadCompletedReceiver
 import com.buffersolve.jutloader.data.repository.RepositoryImpl
 import com.buffersolve.jutloader.domain.model.Resolution
 import com.buffersolve.jutloader.domain.model.Season
 import com.buffersolve.jutloader.domain.model.Series
 import com.buffersolve.jutloader.domain.model.SpecificSeries
 import com.buffersolve.jutloader.domain.usecase.*
-import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.io.IOException
 
 class JutLoaderViewModel(
     app: Application,
-    private val connectivityManager: ConnectivityManager
+    private val connectivityManager: ConnectivityManager,
+    private val getSeasonUseCase: GetSeasonUseCase,
+    private val getSeriesUseCase: GetSeriesUseCase,
+    private val getOnlyOneSeasonsUseCase: GetOnlyOneSeasonUseCase,
+    private val getOnlyOneSeriesUseCase: GetOnlyOneSeriesUseCase,
+    private val getResolutionUseCase: GetResolutionUseCase,
+    private val getSpecificSeriesLinkUseCase: GetSpecificSeriesLinkUseCase,
+    private val isOnlyOneSeasonUseCase: IsOnlyOneSeasonUseCase,
 ) : AndroidViewModel(app) {
 
     private val _season: MutableLiveData<Season> = MutableLiveData()
@@ -54,17 +55,13 @@ class JutLoaderViewModel(
     val progress: LiveData<Long>
         get() = _progress
 
-    private val repository = RepositoryImpl()
-
     // Seasons List
     fun getSeasons(
         url: String,
         userAgent: String
     ) = viewModelScope.launch(Dispatchers.IO) {
-//        safeGetSeasons(url, userAgent)
-
         if (checkInternetConnection()) {
-            val seasons = GetSeasonUseCase(repository).execute(url, userAgent)
+            val seasons = getSeasonUseCase.execute(url, userAgent)
             _season.postValue(seasons)
         } else {
             _season.postValue(Season(listOf("No internet connection"), mutableListOf()))
@@ -76,9 +73,8 @@ class JutLoaderViewModel(
         url: String,
         userAgent: String
     ) = viewModelScope.launch(Dispatchers.IO) {
-
         if (checkInternetConnection()) {
-            val series = GetSeriesUseCase(repository).execute(url, userAgent)
+            val series = getSeriesUseCase.execute(url, userAgent)
             _series.postValue(series)
         } else {
             _season.postValue(Season(listOf("No internet connection"), mutableListOf()))
@@ -89,9 +85,8 @@ class JutLoaderViewModel(
         url: String,
         userAgent: String
     ) = viewModelScope.launch(Dispatchers.IO) {
-
         if (checkInternetConnection()) {
-            val seasons = GetOnlyOneSeasonUseCase(repository).execute(url, userAgent)
+            val seasons = getOnlyOneSeasonsUseCase.execute(url, userAgent)
             _season.postValue(seasons)
         } else {
             _season.postValue(Season(listOf("No internet connection"), mutableListOf()))
@@ -103,12 +98,11 @@ class JutLoaderViewModel(
         url: String,
         userAgent: String
     ) = viewModelScope.launch(Dispatchers.IO) {
-
         if (checkInternetConnection()) {
-            val series = GetOnlyOneSeriesUseCase(repository).execute(url, userAgent)
+            val series = getOnlyOneSeriesUseCase.execute(url, userAgent)
             _series.postValue(series)
         } else {
-            _season.postValue(Season(listOf("No internet connection"), mutableListOf()))
+            _series.postValue(Series(listOf("No internet connection"), mutableListOf()))
         }
     }
 
@@ -117,12 +111,11 @@ class JutLoaderViewModel(
         url: String,
         userAgent: String
     ) = viewModelScope.launch(Dispatchers.IO) {
-
         if (checkInternetConnection()) {
-            val res = GetResolutionUseCase(repository).execute(url, userAgent)
+            val res = getResolutionUseCase.execute(url, userAgent)
             _resolution.postValue(res)
         } else {
-            _season.postValue(Season(listOf("No internet connection"), mutableListOf()))
+            _resolution.postValue(Resolution(listOf("No internet connection")))
         }
     }
 
@@ -132,13 +125,11 @@ class JutLoaderViewModel(
         userAgent: String,
         resolution: String
     ) = viewModelScope.launch(Dispatchers.IO) {
-
         if (checkInternetConnection()) {
-            val specificLinks =
-                GetSpecificSeriesLinkUseCase(repository).execute(listOfLinks, userAgent, resolution)
+            val specificLinks = getSpecificSeriesLinkUseCase.execute(listOfLinks, userAgent, resolution)
             _specificLinks.postValue(specificLinks)
         } else {
-            _season.postValue(Season(listOf("No internet connection"), mutableListOf()))
+            _specificLinks.postValue(SpecificSeries(listOf("No internet connection"), mutableListOf()))
         }
     }
 
@@ -146,9 +137,8 @@ class JutLoaderViewModel(
         url: String,
         userAgent: String
     ) = viewModelScope.launch(Dispatchers.IO) {
-
         if (checkInternetConnection()) {
-            val isOnlyOneSeason = IsOnlyOneSeasons().execute(url, userAgent)
+            val isOnlyOneSeason = isOnlyOneSeasonUseCase.execute(url, userAgent)
             _isOnlyOneSeason.postValue(isOnlyOneSeason)
         } else {
             _season.postValue(Season(listOf("No internet connection"), mutableListOf()))
@@ -160,15 +150,12 @@ class JutLoaderViewModel(
         userAgent: String,
         linkOfConcreteSeries: MutableList<String>,
         names: MutableList<String>
-    ) {
-        DownloadUseCase(DownloaderImpl(context)).execute(
+    ) : Long {
+        return DownloadUseCase(DownloaderImpl(context)).execute(
             userAgent = userAgent,
             linkOfConcreteSeria = linkOfConcreteSeries,
             names = names
         )
-
-        // TODO
-//        val id = DownloaderImpl(context).download()
     }
 
     fun progressObserve(

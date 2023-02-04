@@ -15,6 +15,8 @@ interface Repository {
 
     fun getOnlyOneSeriesUseCase(url: String, userAgent: String): Series
 
+    fun isOnlyOneSeasonUseCase(url: String, userAgent: String): Boolean
+
     fun getResolutionUseCase(url: String, userAgent: String): Resolution
 
     fun getSpecificSeriesLinkUseCase(listOfLinks: List<String>, userAgent: String, resolution: String): SpecificSeries

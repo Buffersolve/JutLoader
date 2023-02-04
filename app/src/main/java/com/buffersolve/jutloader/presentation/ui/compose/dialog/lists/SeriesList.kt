@@ -1,6 +1,5 @@
 package com.buffersolve.jutloader.presentation.ui.compose.dialog.lists
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,7 +17,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import com.buffersolve.jutloader.presentation.ui.DialogState
 import com.buffersolve.jutloader.presentation.ui.SeriesLinkSnapshotStateList
 import com.buffersolve.jutloader.presentation.ui.SeriesSnapshotStateList
 
@@ -57,14 +55,14 @@ fun SeriesPeakList(
                             isChecked.value = newValue
                             if (newValue) {
                                 SeriesSnapshotStateList.add(item)
-
                                 val index = seriesList.indexOf(item)
                                 SeriesLinkSnapshotStateList.add(linkSeriesList[index])
+
                             } else {
                                 SeriesSnapshotStateList.remove(item)
-
                                 val index = seriesList.indexOf(item)
                                 SeriesLinkSnapshotStateList.remove(linkSeriesList[index])
+
                             }
                         }
                     )

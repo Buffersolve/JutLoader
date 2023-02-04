@@ -6,8 +6,8 @@ class DownloadUseCase(
     private val downloader: Downloader
 ) {
 
-    fun execute(userAgent: String, linkOfConcreteSeria: List<String>, names: MutableList<String>) {
-        downloader.download(userAgent, linkOfConcreteSeria, names)
+    fun execute(userAgent: String, linkOfConcreteSeria: List<String>, names: MutableList<String>) : Long {
+        return downloader.download(userAgent, linkOfConcreteSeria, names)
     }
 
 }

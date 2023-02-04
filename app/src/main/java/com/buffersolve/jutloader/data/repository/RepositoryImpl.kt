@@ -3,6 +3,7 @@ package com.buffersolve.jutloader.data.repository
 import com.buffersolve.jutloader.data.parser.getmethods.*
 import com.buffersolve.jutloader.data.parser.getmethods.onlyone.GetOnlyOneSeason
 import com.buffersolve.jutloader.data.parser.getmethods.onlyone.GetOnlyOneSeasonSeries
+import com.buffersolve.jutloader.data.parser.getmethods.onlyone.IsOnlyOneSeasons
 import com.buffersolve.jutloader.domain.model.*
 import com.buffersolve.jutloader.domain.repository.Repository
 
@@ -22,6 +23,9 @@ class RepositoryImpl : Repository {
 
     override fun getOnlyOneSeriesUseCase(url: String, userAgent: String): Series {
         return GetOnlyOneSeasonSeries().execute(url, userAgent)
+    }
+    override fun isOnlyOneSeasonUseCase(url: String, userAgent: String): Boolean {
+        return IsOnlyOneSeasons().execute(url, userAgent)
     }
 
     override fun getResolutionUseCase(url: String, userAgent: String): Resolution {

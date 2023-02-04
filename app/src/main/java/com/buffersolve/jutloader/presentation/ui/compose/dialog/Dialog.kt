@@ -92,6 +92,7 @@ fun NavigationDialog(
                 )
             },
             text = {
+
                 // BackHandler
                 BackHandler {
                     DialogState.add(false)
