@@ -2,12 +2,9 @@ package com.buffersolve.jutloader.presentation.ui
 
 import android.content.Context
 import android.content.Intent
-import android.net.ConnectivityManager
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import android.webkit.WebView
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -121,8 +118,8 @@ fun BarCardProgress(
                 val progressState = remember {
                     mutableStateOf(0L)
                 }
-                viewModel.progress.observe(viewLifecycleOwner) { prgrs ->
-                    progressState.value = prgrs
+                viewModel.progress.observe(viewLifecycleOwner) { progress ->
+                    progressState.value = progress
                 }
                 // Progress
                 DownloadProgressBar(
@@ -302,9 +299,6 @@ fun DownloadProgressBar(progress: Float) {
             containerColor = MaterialTheme.colorScheme.secondaryContainer
         )
     ) {
-//        if (progress in 0..99) {
-//            CircularProgressIndicator(progress.toFloat(), modifier = Modifier.padding(8.dp))
-//        } else { }
         Box(
             modifier = Modifier.fillMaxSize(),
             Alignment.Center
