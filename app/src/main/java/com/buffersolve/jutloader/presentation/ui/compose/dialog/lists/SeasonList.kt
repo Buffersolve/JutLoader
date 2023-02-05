@@ -15,8 +15,8 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.NavHostController
 import com.buffersolve.jutloader.presentation.ui.ExceptionState
 import com.buffersolve.jutloader.presentation.ui.input
-import com.buffersolve.jutloader.presentation.ui.viewModel
 import com.buffersolve.jutloader.R
+import com.buffersolve.jutloader.presentation.ui.JutLoaderViewModel
 
 @Composable
 fun SeasonPeakList(
@@ -26,6 +26,8 @@ fun SeasonPeakList(
     seriesList: List<String>,
     userAgent: String,
     viewLifecycleOwner: LifecycleOwner,
+    viewModel: JutLoaderViewModel
+
 //    exceptionState: MutableState<String>
 ) {
     Column {

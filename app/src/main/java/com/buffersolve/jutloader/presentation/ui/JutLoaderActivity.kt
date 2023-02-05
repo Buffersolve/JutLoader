@@ -10,6 +10,7 @@ import android.webkit.WebView
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.spring
@@ -40,8 +41,8 @@ import com.buffersolve.jutloader.presentation.ui.theme.JutloaderTheme
 import com.buffersolve.jutloader.presentation.ui.compose.TextField
 import com.buffersolve.jutloader.presentation.ui.compose.dialog.NavigationDialog
 import com.buffersolve.jutloader.presentation.ui.compose.landscape.PortraitScreenOnly
+import dagger.hilt.android.AndroidEntryPoint
 
-lateinit var viewModel: JutLoaderViewModel
 lateinit var webViewAgent: String
 
 val SeriesSnapshotStateList = SnapshotStateList<String>()
@@ -50,7 +51,10 @@ val DialogState = SnapshotStateList<Boolean>()
 val ExceptionState = SnapshotStateList<String>()
 var input: String = ""
 
+@AndroidEntryPoint
 class JutLoaderActivity : ComponentActivity() {
+
+    private val viewModel: JutLoaderViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -64,7 +68,8 @@ class JutLoaderActivity : ComponentActivity() {
                 // Top App Bar && Card && ProgressBar
                 BarCardProgress(
                     viewLifecycleOwner = this@JutLoaderActivity,
-                    context = this
+                    context = applicationContext,
+                    viewModel = viewModel
                 )
 
                 // Naruto Bottom
@@ -72,19 +77,9 @@ class JutLoaderActivity : ComponentActivity() {
             }
         }
 
-        // UserAgent & ViewModel
+        // UserAgent
         webViewAgent = WebView(this).settings.userAgentString
 
-        // Connectivity Service
-        val connectivityService = this.getSystemService(Context.CONNECTIVITY_SERVICE)
-        if (connectivityService is ConnectivityManager) {
-            val viewModelProviderFactory =
-                JutLoaderViewModelFactory(application, connectivityService)
-            viewModel =
-                ViewModelProvider(this, viewModelProviderFactory)[JutLoaderViewModel::class.java]
-        } else {
-            Toast.makeText(this, "Smth with connectivityService", Toast.LENGTH_LONG).show()
-        }
     }
 
 }
@@ -94,7 +89,8 @@ class JutLoaderActivity : ComponentActivity() {
 @Composable
 fun BarCardProgress(
     viewLifecycleOwner: LifecycleOwner,
-    context: Context
+    context: Context,
+    viewModel: JutLoaderViewModel,
 ) {
     Scaffold(
         topBar = {
@@ -118,7 +114,8 @@ fun BarCardProgress(
                 Card(
                     scaffoldPadding = it,
                     viewLifecycleOwner = viewLifecycleOwner,
-                    context = context
+                    context = context,
+                    viewModel = viewModel
                 )
 
                 val progressState = remember {
@@ -142,7 +139,8 @@ fun BarCardProgress(
 fun Card(
     scaffoldPadding: PaddingValues,
     viewLifecycleOwner: LifecycleOwner,
-    context: Context
+    context: Context,
+    viewModel: JutLoaderViewModel
 ) {
 
     // Card animation & Arrow
@@ -194,6 +192,7 @@ fun Card(
             // Btn
             ButtonSearch(
                 viewLifecycleOwner = viewLifecycleOwner,
+                viewModel = viewModel
             )
 
             // Dialog with choice
@@ -201,6 +200,7 @@ fun Card(
                 viewLifecycleOwner = viewLifecycleOwner,
                 userAgent = webViewAgent,
                 context = context,
+                viewModel = viewModel
             )
 
             // CardInfo

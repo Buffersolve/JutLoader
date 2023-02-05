@@ -15,6 +15,7 @@ import com.buffersolve.jutloader.presentation.ui.*
 @Composable
 fun ButtonSearch(
     viewLifecycleOwner: LifecycleOwner,
+    viewModel: JutLoaderViewModel
 //    exceptionState: MutableState<String>,
 ) {
 

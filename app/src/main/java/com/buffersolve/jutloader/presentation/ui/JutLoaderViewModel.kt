@@ -7,19 +7,19 @@ import android.net.NetworkCapabilities.*
 import android.net.Uri
 import android.os.Handler
 import androidx.lifecycle.*
-import com.buffersolve.jutloader.data.contentprovider.DownloadProgressObserver
-import com.buffersolve.jutloader.data.downloader.DownloaderImpl
-import com.buffersolve.jutloader.data.parser.getmethods.onlyone.IsOnlyOneSeasons
-import com.buffersolve.jutloader.data.repository.RepositoryImpl
+import com.buffersolve.jutloader.data.provider.DownloadProgressObserver
 import com.buffersolve.jutloader.domain.model.Resolution
 import com.buffersolve.jutloader.domain.model.Season
 import com.buffersolve.jutloader.domain.model.Series
 import com.buffersolve.jutloader.domain.model.SpecificSeries
 import com.buffersolve.jutloader.domain.usecase.*
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class JutLoaderViewModel(
+@HiltViewModel
+class JutLoaderViewModel @Inject constructor(
     app: Application,
     private val connectivityManager: ConnectivityManager,
     private val getSeasonUseCase: GetSeasonUseCase,
@@ -29,6 +29,7 @@ class JutLoaderViewModel(
     private val getResolutionUseCase: GetResolutionUseCase,
     private val getSpecificSeriesLinkUseCase: GetSpecificSeriesLinkUseCase,
     private val isOnlyOneSeasonUseCase: IsOnlyOneSeasonUseCase,
+    private val downloadUseCase: DownloadUseCase,
 ) : AndroidViewModel(app) {
 
     private val _season: MutableLiveData<Season> = MutableLiveData()
@@ -146,12 +147,11 @@ class JutLoaderViewModel(
     }
 
     fun download(
-        context: Context,
         userAgent: String,
         linkOfConcreteSeries: MutableList<String>,
         names: MutableList<String>
     ) : Long {
-        return DownloadUseCase(DownloaderImpl(context)).execute(
+        return downloadUseCase.execute(
             userAgent = userAgent,
             linkOfConcreteSeria = linkOfConcreteSeries,
             names = names
@@ -164,6 +164,7 @@ class JutLoaderViewModel(
         handler: Handler,
         downloadId: Long
     ) {
+        // TODO with REPOSITORY!!!!
         val downloadObserver = DownloadProgressObserver(context, handler, downloadId)
         val contentResolver = context.contentResolver
         contentResolver.registerContentObserver(
@@ -175,7 +176,6 @@ class JutLoaderViewModel(
         downloadObserver.progress.observe(viewLifecycleOwner) {
             _progress.postValue(it)
         }
-
     }
 
     private fun checkInternetConnection(): Boolean {

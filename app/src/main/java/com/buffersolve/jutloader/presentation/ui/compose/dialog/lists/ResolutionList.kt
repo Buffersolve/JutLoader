@@ -25,6 +25,7 @@ fun ResolutionPeakList(
     viewLifecycleOwner: LifecycleOwner,
     resList: List<String>,
     context: Context,
+    viewModel: JutLoaderViewModel
 ) {
 
     Column {
@@ -62,7 +63,6 @@ fun ResolutionPeakList(
                             if (specificLink.isNotEmpty()) {
 
                                 val id: Long = viewModel.download(
-                                    context = context,
                                     userAgent = userAgent,
                                     linkOfConcreteSeries = specificLink.toMutableList(),
                                     names = specificName.toMutableList()

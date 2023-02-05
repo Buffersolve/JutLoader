@@ -30,7 +30,8 @@ fun NavigationDialog(
     viewLifecycleOwner: LifecycleOwner,
     userAgent: String,
 //    exceptionState: MutableState<String>,
-    context: Context
+    context: Context,
+    viewModel: JutLoaderViewModel
 ) {
 
     // Lists
@@ -111,6 +112,7 @@ fun NavigationDialog(
                             seriesList.value,
                             userAgent,
                             viewLifecycleOwner,
+                            viewModel
 //                            exceptionState
                         )
                     }
@@ -131,6 +133,7 @@ fun NavigationDialog(
                             viewLifecycleOwner,
                             resList.value,
                             context,
+                            viewModel
 //                            specificLink = specificLink.value
                         )
                     }

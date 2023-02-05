@@ -1,4 +1,4 @@
-package com.buffersolve.jutloader.data.contentprovider
+package com.buffersolve.jutloader.data.provider
 
 import android.app.DownloadManager
 import android.content.Context
@@ -10,8 +10,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 
 class DownloadProgressObserver(
-    private val context: Context,
-    private val handler: Handler,
+    context: Context,
+    handler: Handler,
     private val downloadId: Long
 ) : ContentObserver(handler) {
 
@@ -23,11 +23,8 @@ class DownloadProgressObserver(
         ComponentActivity.DOWNLOAD_SERVICE
     ) as DownloadManager
 
-    //    @SuppressLint("Range")
     override fun onChange(selfChange: Boolean) {
         super.onChange(selfChange)
-
-//        Log.d("BYTESDOWNLAOD", downloadId.toString())
 
         val query = DownloadManager.Query().setFilterById(downloadId)
         val cursor = downloadManager.query(query)
@@ -39,13 +36,12 @@ class DownloadProgressObserver(
                 cursor.getLong(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_TOTAL_SIZE_BYTES))
 
             val progress: Long = (bytesDownloaded * 100 / bytesTotal)
-            Log.d("BYTESDOWNLAOD", progress.toString())
 
             _progress.postValue(progress)
-
-//            handler.obtainMessage(DOWNLOAD_PROGRESS, bytesDownloaded, bytesTotal).sendToTarget()
 
             cursor.close()
         }
     }
+
+
 }
