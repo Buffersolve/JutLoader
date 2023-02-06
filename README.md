@@ -17,7 +17,7 @@
 + **Kotlin Flow**
 + **Dagger-Hilt**
 + **Android Architecture Components:**
-  + ~~*LiveData*
+  + ~~*LiveData*~~
   + *ViewModel*
   + *Navigation*
   + *Jetpack Compose*
