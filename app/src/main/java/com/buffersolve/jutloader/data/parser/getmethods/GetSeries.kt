@@ -1,6 +1,5 @@
 package com.buffersolve.jutloader.data.parser.getmethods
 
-import android.util.Log
 import com.buffersolve.jutloader.data.parser.Parser
 import com.buffersolve.jutloader.domain.model.Series
 import org.jsoup.select.Elements

@@ -39,6 +39,7 @@ import com.buffersolve.jutloader.presentation.ui.compose.TextField
 import com.buffersolve.jutloader.presentation.ui.compose.dialog.NavigationDialog
 import com.buffersolve.jutloader.presentation.ui.compose.landscape.PortraitScreenOnly
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 
 lateinit var webViewAgent: String
 
@@ -66,8 +67,13 @@ class JutLoaderActivity : ComponentActivity() {
                 BarCardProgress(
                     viewLifecycleOwner = this@JutLoaderActivity,
                     context = applicationContext,
-                    viewModel = viewModel
+                    viewModel = viewModel,
+                    lifecycleScope = lifecycleScope
                 )
+
+//                lifecycleScope.launch {
+//                    repeatOnLifecycle()
+//                }
 
                 // Naruto Bottom
                 GifImage()
@@ -88,6 +94,7 @@ fun BarCardProgress(
     viewLifecycleOwner: LifecycleOwner,
     context: Context,
     viewModel: JutLoaderViewModel,
+    lifecycleScope: LifecycleCoroutineScope,
 ) {
     Scaffold(
         topBar = {
@@ -112,7 +119,8 @@ fun BarCardProgress(
                     scaffoldPadding = it,
                     viewLifecycleOwner = viewLifecycleOwner,
                     context = context,
-                    viewModel = viewModel
+                    viewModel = viewModel,
+                    lifecycleScope = lifecycleScope
                 )
 
                 val progressState = remember {
@@ -137,7 +145,8 @@ fun Card(
     scaffoldPadding: PaddingValues,
     viewLifecycleOwner: LifecycleOwner,
     context: Context,
-    viewModel: JutLoaderViewModel
+    viewModel: JutLoaderViewModel,
+    lifecycleScope: LifecycleCoroutineScope
 ) {
 
     // Card animation & Arrow
@@ -197,7 +206,8 @@ fun Card(
                 viewLifecycleOwner = viewLifecycleOwner,
                 userAgent = webViewAgent,
                 context = context,
-                viewModel = viewModel
+                viewModel = viewModel,
+                lifecycleScope = lifecycleScope,
             )
 
             // CardInfo

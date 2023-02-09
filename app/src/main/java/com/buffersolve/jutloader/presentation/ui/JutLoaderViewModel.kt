@@ -140,6 +140,7 @@ class JutLoaderViewModel @Inject constructor(
     ) = viewModelScope.launch(Dispatchers.IO) {
         if (checkInternetConnection()) {
             val isOnlyOneSeason = isOnlyOneSeasonUseCase.execute(url, userAgent)
+//            if ()
             _isOnlyOneSeason.postValue(isOnlyOneSeason)
         } else {
             _season.postValue(Season(listOf("No internet connection"), mutableListOf()))
