@@ -11,12 +11,17 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavHostController
 import com.buffersolve.jutloader.presentation.ui.ExceptionState
 import com.buffersolve.jutloader.presentation.ui.input
 import com.buffersolve.jutloader.R
 import com.buffersolve.jutloader.presentation.ui.JutLoaderViewModel
+import com.buffersolve.jutloader.presentation.ui.webViewAgent
+import kotlinx.coroutines.launch
 
 @Composable
 fun SeasonPeakList(
@@ -26,7 +31,9 @@ fun SeasonPeakList(
     seriesList: List<String>,
     userAgent: String,
     viewLifecycleOwner: LifecycleOwner,
-    viewModel: JutLoaderViewModel
+    viewModel: JutLoaderViewModel,
+    lifecycleScope: LifecycleCoroutineScope,
+
 
 //    exceptionState: MutableState<String>
 ) {
@@ -40,29 +47,47 @@ fun SeasonPeakList(
 
         LazyColumn {
             items(numberSeasonsList) {
-                if (ExceptionState.lastOrNull()?.isEmpty() == true) {
+                if (ExceptionState.lastOrNull() == "null") {
                     TextButton(
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.surface,
                             contentColor = MaterialTheme.colorScheme.onSurface
                         ),
                         onClick = {
-                            if (ExceptionState.last().isEmpty()) {
+                            if (ExceptionState.last() == "null") {
                                 val index = numberSeasonsList.indexOf(it)
 
-                                viewModel.isOnlyOneSeason.observe(viewLifecycleOwner) {
-                                    if (it) {
-                                        viewModel.getOnlyOneSeries(
-                                            url = input,
-                                            userAgent = userAgent
-                                        )
-                                    } else {
-                                        viewModel.getSeries(
-                                            url = linkSeriesList[index],
-                                            userAgent = userAgent
-                                        )
+                                lifecycleScope.launch {
+                                    viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                                        viewModel.isOnlyOneSeason.collect {
+                                            if (it.isOnlyOneSeason == true) {
+                                                viewModel.getOnlyOneSeries(
+                                                    url = input,
+                                                    userAgent = userAgent
+                                                )
+                                            } else {
+                                                viewModel.getSeries(
+                                                    url = linkSeriesList[index],
+                                                    userAgent = userAgent
+                                                )
+                                            }
+                                        }
                                     }
                                 }
+
+//                                viewModel.isOnlyOneSeason.observe(viewLifecycleOwner) {
+//                                    if (it) {
+//                                        viewModel.getOnlyOneSeries(
+//                                            url = input,
+//                                            userAgent = userAgent
+//                                        )
+//                                    } else {
+//                                        viewModel.getSeries(
+//                                            url = linkSeriesList[index],
+//                                            userAgent = userAgent
+//                                        )
+//                                    }
+//                                }
                                 controller.navigate("SeriesPeakList")
                             }
                         }

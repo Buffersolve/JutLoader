@@ -6,15 +6,14 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities.*
 import android.net.Uri
 import android.os.Handler
+import android.util.Log
 import androidx.lifecycle.*
 import com.buffersolve.jutloader.data.provider.DownloadProgressObserver
-import com.buffersolve.jutloader.domain.model.Resolution
-import com.buffersolve.jutloader.domain.model.Season
-import com.buffersolve.jutloader.domain.model.Series
-import com.buffersolve.jutloader.domain.model.SpecificSeries
+import com.buffersolve.jutloader.domain.model.*
 import com.buffersolve.jutloader.domain.usecase.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -32,25 +31,45 @@ class JutLoaderViewModel @Inject constructor(
     private val downloadUseCase: DownloadUseCase,
 ) : AndroidViewModel(app) {
 
-    private val _season: MutableLiveData<Season> = MutableLiveData()
-    val season: LiveData<Season>
-        get() = _season
+    // Flow
+    private val _season = MutableSharedFlow<Season>(replay = 1)
+    val season: SharedFlow<Season> = _season.asSharedFlow()
 
-    private val _series: MutableLiveData<Series> = MutableLiveData()
-    val series: LiveData<Series>
-        get() = _series
+    private val _series = MutableSharedFlow<Series>(replay = 1)
+    val series: SharedFlow<Series> = _series.asSharedFlow()
 
-    private val _specificLinks: MutableLiveData<SpecificSeries> = MutableLiveData()
-    val specificLinks: LiveData<SpecificSeries>
-        get() = _specificLinks
+    private val _specificLinks = MutableSharedFlow<SpecificSeries>(replay = 1)
+    val specificLinks: SharedFlow<SpecificSeries> = _specificLinks.asSharedFlow()
 
-    private val _resolution: MutableLiveData<Resolution> = MutableLiveData()
-    val resolution: LiveData<Resolution>
-        get() = _resolution
+    private val _resolution = MutableSharedFlow<Resolution>(replay = 1)
+    val resolution: SharedFlow<Resolution> = _resolution.asSharedFlow()
 
-    private val _isOnlyOneSeason: MutableLiveData<Boolean> = MutableLiveData()
-    val isOnlyOneSeason: LiveData<Boolean>
-        get() = _isOnlyOneSeason
+    private val _isOnlyOneSeason = MutableSharedFlow<OneSeason>(replay = 1)
+    val isOnlyOneSeason: SharedFlow<OneSeason> = _isOnlyOneSeason.asSharedFlow()
+
+//    private val _progress = MutableSharedFlow<Boolean>(replay = 1)
+//    val progress: SharedFlow<Boolean> = _progress.asSharedFlow()
+
+    // Live data
+//    private val _season: MutableLiveData<Season> = MutableLiveData()
+//    val season: LiveData<Season>
+//        get() = _season
+
+//    private val _series: MutableLiveData<Series> = MutableLiveData()
+//    val series: LiveData<Series>
+//        get() = _series
+
+//    private val _specificLinks: MutableLiveData<SpecificSeries> = MutableLiveData()
+//    val specificLinks: LiveData<SpecificSeries>
+//        get() = _specificLinks
+
+//    private val _resolution: MutableLiveData<Resolution> = MutableLiveData()
+//    val resolution: LiveData<Resolution>
+//        get() = _resolution
+
+//    private val _isOnlyOneSeason: MutableLiveData<Boolean> = MutableLiveData()
+//    val isOnlyOneSeason: LiveData<Boolean>
+//        get() = _isOnlyOneSeason
 
     private val _progress: MutableLiveData<Long> = MutableLiveData()
     val progress: LiveData<Long>
@@ -63,9 +82,10 @@ class JutLoaderViewModel @Inject constructor(
     ) = viewModelScope.launch(Dispatchers.IO) {
         if (checkInternetConnection()) {
             val seasons = getSeasonUseCase.execute(url, userAgent)
-            _season.postValue(seasons)
+            Log.d("SEASONVALUE11", seasons.toString())
+            _season.emit(seasons)
         } else {
-            _season.postValue(Season(listOf("No internet connection"), mutableListOf()))
+            _season.emit(Season(listOf("No internet connection"), mutableListOf()))
         }
     }
 
@@ -76,9 +96,9 @@ class JutLoaderViewModel @Inject constructor(
     ) = viewModelScope.launch(Dispatchers.IO) {
         if (checkInternetConnection()) {
             val series = getSeriesUseCase.execute(url, userAgent)
-            _series.postValue(series)
+            _series.emit(series)
         } else {
-            _season.postValue(Season(listOf("No internet connection"), mutableListOf()))
+            _season.emit(Season(listOf("No internet connection"), mutableListOf()))
         }
     }
 
@@ -88,9 +108,11 @@ class JutLoaderViewModel @Inject constructor(
     ) = viewModelScope.launch(Dispatchers.IO) {
         if (checkInternetConnection()) {
             val seasons = getOnlyOneSeasonsUseCase.execute(url, userAgent)
-            _season.postValue(seasons)
+            _season.emit(seasons)
         } else {
-            _season.postValue(Season(listOf("No internet connection"), mutableListOf()))
+            _season.emit(Season(listOf("No internet connection"), mutableListOf()))
+//            _season.value = Season(listOf("No internet connection"), mutableListOf())
+
         }
     }
 
@@ -101,9 +123,9 @@ class JutLoaderViewModel @Inject constructor(
     ) = viewModelScope.launch(Dispatchers.IO) {
         if (checkInternetConnection()) {
             val series = getOnlyOneSeriesUseCase.execute(url, userAgent)
-            _series.postValue(series)
+            _series.emit(series)
         } else {
-            _series.postValue(Series(listOf("No internet connection"), mutableListOf()))
+            _series.emit(Series(listOf("No internet connection"), mutableListOf()))
         }
     }
 
@@ -114,9 +136,9 @@ class JutLoaderViewModel @Inject constructor(
     ) = viewModelScope.launch(Dispatchers.IO) {
         if (checkInternetConnection()) {
             val res = getResolutionUseCase.execute(url, userAgent)
-            _resolution.postValue(res)
+            _resolution.emit(res)
         } else {
-            _resolution.postValue(Resolution(listOf("No internet connection")))
+            _resolution.emit(Resolution(listOf("No internet connection")))
         }
     }
 
@@ -128,9 +150,9 @@ class JutLoaderViewModel @Inject constructor(
     ) = viewModelScope.launch(Dispatchers.IO) {
         if (checkInternetConnection()) {
             val specificLinks = getSpecificSeriesLinkUseCase.execute(listOfLinks, userAgent, resolution)
-            _specificLinks.postValue(specificLinks)
+            _specificLinks.emit(specificLinks)
         } else {
-            _specificLinks.postValue(SpecificSeries(listOf("No internet connection"), mutableListOf()))
+            _specificLinks.emit(SpecificSeries(listOf("No internet connection"), mutableListOf()))
         }
     }
 
@@ -141,9 +163,9 @@ class JutLoaderViewModel @Inject constructor(
         if (checkInternetConnection()) {
             val isOnlyOneSeason = isOnlyOneSeasonUseCase.execute(url, userAgent)
 //            if ()
-            _isOnlyOneSeason.postValue(isOnlyOneSeason)
+            _isOnlyOneSeason.emit(isOnlyOneSeason)
         } else {
-            _season.postValue(Season(listOf("No internet connection"), mutableListOf()))
+            _season.emit(Season(listOf("No internet connection"), mutableListOf()))
         }
     }
 

@@ -198,7 +198,8 @@ fun Card(
             // Btn
             ButtonSearch(
                 viewLifecycleOwner = viewLifecycleOwner,
-                viewModel = viewModel
+                viewModel = viewModel,
+                lifecycleScope = lifecycleScope
             )
 
             // Dialog with choice

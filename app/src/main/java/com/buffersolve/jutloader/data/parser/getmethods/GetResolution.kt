@@ -12,10 +12,18 @@ class GetResolution {
                 userAgent = userAgent
             )
 
-            val res = doc.select("source")
+        return when (doc.isSuccess) {
+            true -> Resolution(
+                res = doc.getOrThrow().select("source")
                 .eachAttr("res").map { it + "p" }
+            )
+            else -> {Resolution(res = listOf())}
+        }
 
-        return Resolution(res)
+//            val res = doc.select("source")
+//                .eachAttr("res").map { it + "p" }
+//
+//        return Resolution(res)
 
     }
 

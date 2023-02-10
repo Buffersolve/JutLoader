@@ -9,13 +9,18 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavHostController
 import com.buffersolve.jutloader.presentation.ui.*
+import kotlinx.coroutines.launch
 
 @Composable
 fun ResolutionPeakList(
@@ -25,8 +30,10 @@ fun ResolutionPeakList(
     viewLifecycleOwner: LifecycleOwner,
     resList: List<String>,
     context: Context,
-    viewModel: JutLoaderViewModel
-) {
+    viewModel: JutLoaderViewModel,
+    lifecycleScope: LifecycleCoroutineScope,
+
+    ) {
 
     Column {
         Column(
@@ -56,28 +63,56 @@ fun ResolutionPeakList(
                             resList[index].replace("p", "")
                         )
 
-                        viewModel.specificLinks.observe(viewLifecycleOwner) {
-                            specificLink = it.linkToSpecificSeries
-                            specificName = it.listOfSeriesName
+                        lifecycleScope.launch {
+                            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                                viewModel.specificLinks.collect {
 
-                            if (specificLink.isNotEmpty()) {
+                                    specificLink = it.linkToSpecificSeries
+                                    specificName = it.listOfSeriesName
 
-                                val id: Long = viewModel.download(
-                                    userAgent = userAgent,
-                                    linkOfConcreteSeries = specificLink.toMutableList(),
-                                    names = specificName.toMutableList()
-                                )
+                                    if (specificLink.isNotEmpty()) {
 
-                                val handler = Handler(Looper.getMainLooper())
-                                viewModel.progressObserve(
-                                    viewLifecycleOwner, context, handler, id
-                                )
+                                        val id: Long = viewModel.download(
+                                            userAgent = userAgent,
+                                            linkOfConcreteSeries = specificLink.toMutableList(),
+                                            names = specificName.toMutableList()
+                                        )
 
-                                SeriesSnapshotStateList.clear()
-                                SeriesLinkSnapshotStateList.clear()
+                                        val handler = Handler(Looper.getMainLooper())
+                                        viewModel.progressObserve(
+                                            viewLifecycleOwner, context, handler, id
+                                        )
 
+                                        SeriesSnapshotStateList.clear()
+                                        SeriesLinkSnapshotStateList.clear()
+
+                                    }
+                                }
                             }
                         }
+
+//                        viewModel.specificLinks.observe(viewLifecycleOwner) {
+//                            specificLink = it.linkToSpecificSeries
+//                            specificName = it.listOfSeriesName
+//
+//                            if (specificLink.isNotEmpty()) {
+//
+//                                val id: Long = viewModel.download(
+//                                    userAgent = userAgent,
+//                                    linkOfConcreteSeries = specificLink.toMutableList(),
+//                                    names = specificName.toMutableList()
+//                                )
+//
+//                                val handler = Handler(Looper.getMainLooper())
+//                                viewModel.progressObserve(
+//                                    viewLifecycleOwner, context, handler, id
+//                                )
+//
+//                                SeriesSnapshotStateList.clear()
+//                                SeriesLinkSnapshotStateList.clear()
+//
+//                            }
+//                        }
 
                         DialogState.add(false)
                         controller.popBackStack(

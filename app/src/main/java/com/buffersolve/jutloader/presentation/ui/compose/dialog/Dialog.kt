@@ -42,37 +42,81 @@ fun NavigationDialog(
     // Lists
     val seasonList = remember { mutableStateOf(listOf<String>()) }
     val seasonLink = remember { mutableStateOf(listOf<String>()) }
-    viewModel.season.observe(viewLifecycleOwner) {
-        seasonList.value = it.season
-        seasonLink.value = it.seasonLink
-    }
+//    viewModel.season.observe(viewLifecycleOwner) {
+//        seasonList.value = it.season
+//        seasonLink.value = it.seasonLink
+//    }
 
     // Series
     val seriesList = remember { mutableStateOf(listOf<String>()) }
     val seriesLink = remember { mutableStateOf(listOf<String>()) }
-    viewModel.series.observe(viewLifecycleOwner) {
-        seriesList.value = it.seria
-        seriesLink.value = it.seriaLink
-    }
+//    viewModel.series.observe(viewLifecycleOwner) {
+//        seriesList.value = it.seria
+//        seriesLink.value = it.seriaLink
+//    }
 
     // Resolution
     val resList = remember { mutableStateOf(listOf<String>()) }
-    viewModel.resolution.observe(viewLifecycleOwner) {
-        resList.value = it.res
-    }
+//    viewModel.resolution.observe(viewLifecycleOwner) {
+//        resList.value = it.res
+//    }
 
     // Exception
+    LaunchedEffect(key1 = 1) {
 
-    SideEffect {
+        // Exception
         lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                Parser.exceptionS.collect { exception ->
-                    ExceptionState.add(exception)
-                    if (exception.isNotEmpty()) seasonList.value = listOf(exception)
+                viewModel.isOnlyOneSeason.collect {
+                    Log.d("EXCEPTIONNNN22", it.toString())
+                    ExceptionState.add(it.exception.toString())
+                    if (it.exception == true) seasonList.value = listOf("Error, try a different name")
+                    Log.d("EXCEPTIONNNN22", ExceptionState.last().toString())
+
+                }
+//                Parser.exception.collect { exception ->
+//                    ExceptionState.add(exception)
+//                    if (exception.isNotEmpty()) seasonList.value = listOf(exception)
+//                }
+            }
+        }
+
+        // Season
+        lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.season.collect {
+                    Log.d("SEASONVALUE", it.toString())
+                    seasonList.value = it.season
+                    seasonLink.value = it.seasonLink
                 }
             }
         }
+
+        // Series
+        lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.series.collect {
+                    Log.d("SEASONVALUE", it.toString())
+                    seriesList.value = it.seria
+                    seriesLink.value = it.seriaLink
+                }
+            }
+        }
+
+        // Resolution
+        lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.resolution.collect {
+                    Log.d("SEASONVALUE", it.toString())
+                    resList.value = it.res
+
+                }
+            }
+        }
+
+
     }
+
 
 //    Parser.exception.observe(viewLifecycleOwner) {
 //        ExceptionState.add(it)
@@ -129,7 +173,8 @@ fun NavigationDialog(
                             seriesList.value,
                             userAgent,
                             viewLifecycleOwner,
-                            viewModel
+                            viewModel,
+                            lifecycleScope
                         )
                     }
                     composable("SeriesPeakList") {
@@ -148,7 +193,8 @@ fun NavigationDialog(
                             viewLifecycleOwner,
                             resList.value,
                             context,
-                            viewModel
+                            viewModel,
+                            lifecycleScope
                         )
                     }
                 }
