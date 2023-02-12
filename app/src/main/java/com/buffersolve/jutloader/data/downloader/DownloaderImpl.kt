@@ -32,8 +32,6 @@ class DownloaderImpl(
         val requestList = mutableListOf<Long>()
         var requestLong = 1L
 
-
-
         for (url in deleteDuplicateLinks) {
             Log.d("NAMEFILE", deleteDuplicateNames[deleteDuplicateLinks.indexOf(url)])
             val request = DownloadManager.Request(Uri.parse(url))

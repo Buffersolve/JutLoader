@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.webkit.WebView
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -71,10 +72,6 @@ class JutLoaderActivity : ComponentActivity() {
                     lifecycleScope = lifecycleScope
                 )
 
-//                lifecycleScope.launch {
-//                    repeatOnLifecycle()
-//                }
-
                 // Naruto Bottom
                 GifImage()
             }
@@ -126,9 +123,20 @@ fun BarCardProgress(
                 val progressState = remember {
                     mutableStateOf(0L)
                 }
-                viewModel.progress.observe(viewLifecycleOwner) { progress ->
-                    progressState.value = progress
+
+                LaunchedEffect(key1 = 1) {
+                    lifecycleScope.launch {
+                        viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                            viewModel.progress.collect {
+                                progressState.value = it
+
+                            }
+                        }
+                    }
                 }
+//                viewModel.progress.observe(viewLifecycleOwner) { progress ->
+//                    progressState.value = progress
+//                }
                 // Progress
                 DownloadProgressBar(
                     progressState.value * 0.01.toFloat()
@@ -315,7 +323,10 @@ fun DownloadProgressBar(progress: Float) {
             Alignment.Center
         ) {
             Column {
-                Text(modifier = Modifier.align(CenterHorizontally), text = "Download Progress")
+                Text(
+                    modifier = Modifier.align(CenterHorizontally),
+                    text = "Download Progress"
+                )
                 LinearProgressIndicator(
                     modifier = Modifier
                         .padding(top = 10.dp, start = 40.dp, end = 40.dp)

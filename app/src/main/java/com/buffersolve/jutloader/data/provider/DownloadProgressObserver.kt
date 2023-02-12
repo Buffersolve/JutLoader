@@ -8,16 +8,18 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import kotlinx.coroutines.flow.*
 
-class DownloadProgressObserver(
+class DownloadProgressObserver (
     context: Context,
     handler: Handler,
     private val downloadId: Long
 ) : ContentObserver(handler) {
 
-    private val _progress: MutableLiveData<Long> = MutableLiveData()
-    val progress: LiveData<Long>
-        get() = _progress
+    private val _progress = MutableStateFlow(0L)
+    val progress: StateFlow<Long> = _progress.asStateFlow()
+
+//    var progressPublic: Long = 0L
 
     private val downloadManager: DownloadManager = context.getSystemService(
         ComponentActivity.DOWNLOAD_SERVICE
@@ -37,11 +39,23 @@ class DownloadProgressObserver(
 
             val progress: Long = (bytesDownloaded * 100 / bytesTotal)
 
-            _progress.postValue(progress)
+            _progress.value = progress
+//            val callback: () -> Long = { progress }
+//            setProgress(callback)
 
             cursor.close()
         }
     }
+
+    //    private fun setProgress(callback: () -> Long) {
+//        progressPublic = callback()
+////        Log.d("ProgressDebug", progressPublic.toString())
+//    }
+//
+//    fun getProgress(): StateFlow<Long> {
+//        val progress: StateFlow<Long> = _progress.asStateFlow()
+//        return progress
+//    }
 
 
 }

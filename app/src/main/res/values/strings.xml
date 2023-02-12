@@ -1,5 +1,7 @@
 <resources>
     <string name="app_name">jutloader</string>
 
+    <string name="no_internet">No internet connection</string>
+
 <!--    <string name="BASE_URI">https://jut.su/</string>-->
 </resources>

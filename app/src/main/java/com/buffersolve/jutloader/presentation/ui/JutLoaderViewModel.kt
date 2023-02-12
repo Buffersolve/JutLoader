@@ -29,6 +29,7 @@ class JutLoaderViewModel @Inject constructor(
     private val getSpecificSeriesLinkUseCase: GetSpecificSeriesLinkUseCase,
     private val isOnlyOneSeasonUseCase: IsOnlyOneSeasonUseCase,
     private val downloadUseCase: DownloadUseCase,
+//    private val getDownloadProgressObserver: DownloadProgressObserver,
 ) : AndroidViewModel(app) {
 
     // Flow
@@ -47,33 +48,8 @@ class JutLoaderViewModel @Inject constructor(
     private val _isOnlyOneSeason = MutableSharedFlow<OneSeason>(replay = 1)
     val isOnlyOneSeason: SharedFlow<OneSeason> = _isOnlyOneSeason.asSharedFlow()
 
-//    private val _progress = MutableSharedFlow<Boolean>(replay = 1)
-//    val progress: SharedFlow<Boolean> = _progress.asSharedFlow()
-
-    // Live data
-//    private val _season: MutableLiveData<Season> = MutableLiveData()
-//    val season: LiveData<Season>
-//        get() = _season
-
-//    private val _series: MutableLiveData<Series> = MutableLiveData()
-//    val series: LiveData<Series>
-//        get() = _series
-
-//    private val _specificLinks: MutableLiveData<SpecificSeries> = MutableLiveData()
-//    val specificLinks: LiveData<SpecificSeries>
-//        get() = _specificLinks
-
-//    private val _resolution: MutableLiveData<Resolution> = MutableLiveData()
-//    val resolution: LiveData<Resolution>
-//        get() = _resolution
-
-//    private val _isOnlyOneSeason: MutableLiveData<Boolean> = MutableLiveData()
-//    val isOnlyOneSeason: LiveData<Boolean>
-//        get() = _isOnlyOneSeason
-
-    private val _progress: MutableLiveData<Long> = MutableLiveData()
-    val progress: LiveData<Long>
-        get() = _progress
+    private val _progress = MutableSharedFlow<Long>(replay = 1)
+    val progress: SharedFlow<Long> = _progress.asSharedFlow()
 
     // Seasons List
     fun getSeasons(
@@ -149,7 +125,8 @@ class JutLoaderViewModel @Inject constructor(
         resolution: String
     ) = viewModelScope.launch(Dispatchers.IO) {
         if (checkInternetConnection()) {
-            val specificLinks = getSpecificSeriesLinkUseCase.execute(listOfLinks, userAgent, resolution)
+            val specificLinks =
+                getSpecificSeriesLinkUseCase.execute(listOfLinks, userAgent, resolution)
             _specificLinks.emit(specificLinks)
         } else {
             _specificLinks.emit(SpecificSeries(listOf("No internet connection"), mutableListOf()))
@@ -173,7 +150,7 @@ class JutLoaderViewModel @Inject constructor(
         userAgent: String,
         linkOfConcreteSeries: MutableList<String>,
         names: MutableList<String>
-    ) : Long {
+    ): Long {
         return downloadUseCase.execute(
             userAgent = userAgent,
             linkOfConcreteSeria = linkOfConcreteSeries,
@@ -182,12 +159,11 @@ class JutLoaderViewModel @Inject constructor(
     }
 
     fun progressObserve(
-        viewLifecycleOwner: LifecycleOwner,
         context: Context,
         handler: Handler,
         downloadId: Long
-    ) {
-        // TODO with REPOSITORY!!!!
+    ) = viewModelScope.launch(Dispatchers.Unconfined) {
+
         val downloadObserver = DownloadProgressObserver(context, handler, downloadId)
         val contentResolver = context.contentResolver
         contentResolver.registerContentObserver(
@@ -196,9 +172,14 @@ class JutLoaderViewModel @Inject constructor(
             downloadObserver
         )
 
-        downloadObserver.progress.observe(viewLifecycleOwner) {
-            _progress.postValue(it)
+        /////
+
+        viewModelScope.launch {
+            downloadObserver.progress.collect {
+                _progress.emit(it)
+            }
         }
+
     }
 
     private fun checkInternetConnection(): Boolean {

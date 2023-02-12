@@ -35,4 +35,10 @@ class RepositoryImpl : Repository {
     override fun getSpecificSeriesLinkUseCase(listOfLinks: List<String>, userAgent: String, resolution: String): SpecificSeries {
         return GetSpecificSeriesLink().execute(listOfLinks, userAgent, resolution)
     }
+
+//    override fun getProgress(context: Context, handler: Handler, downloadId: Long): StateFlow<Long> {
+//        return DownloadProgressObserver(context, handler, downloadId).getProgress()
+//    }
+
+
 }

@@ -32,8 +32,7 @@ fun ResolutionPeakList(
     context: Context,
     viewModel: JutLoaderViewModel,
     lifecycleScope: LifecycleCoroutineScope,
-
-    ) {
+) {
 
     Column {
         Column(
@@ -80,7 +79,9 @@ fun ResolutionPeakList(
 
                                         val handler = Handler(Looper.getMainLooper())
                                         viewModel.progressObserve(
-                                            viewLifecycleOwner, context, handler, id
+                                            context = context,
+                                            handler = handler,
+                                            downloadId = id
                                         )
 
                                         SeriesSnapshotStateList.clear()
@@ -90,29 +91,6 @@ fun ResolutionPeakList(
                                 }
                             }
                         }
-
-//                        viewModel.specificLinks.observe(viewLifecycleOwner) {
-//                            specificLink = it.linkToSpecificSeries
-//                            specificName = it.listOfSeriesName
-//
-//                            if (specificLink.isNotEmpty()) {
-//
-//                                val id: Long = viewModel.download(
-//                                    userAgent = userAgent,
-//                                    linkOfConcreteSeries = specificLink.toMutableList(),
-//                                    names = specificName.toMutableList()
-//                                )
-//
-//                                val handler = Handler(Looper.getMainLooper())
-//                                viewModel.progressObserve(
-//                                    viewLifecycleOwner, context, handler, id
-//                                )
-//
-//                                SeriesSnapshotStateList.clear()
-//                                SeriesLinkSnapshotStateList.clear()
-//
-//                            }
-//                        }
 
                         DialogState.add(false)
                         controller.popBackStack(
