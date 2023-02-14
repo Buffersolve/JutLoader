@@ -79,7 +79,7 @@ class JutLoaderActivity : ComponentActivity() {
 
         // UserAgent
         webViewAgent = WebView(this).settings.userAgentString
-
+        Log.d("UserAgent", webViewAgent)
     }
 
 }

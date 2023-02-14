@@ -1,10 +1,6 @@
 package com.buffersolve.jutloader.domain.repository
 
-import android.content.Context
-import android.os.Handler
-import com.buffersolve.jutloader.data.provider.DownloadProgressObserver
 import com.buffersolve.jutloader.domain.model.*
-import kotlinx.coroutines.flow.StateFlow
 
 interface Repository {
 
