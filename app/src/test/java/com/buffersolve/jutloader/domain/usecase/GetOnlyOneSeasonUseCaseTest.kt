@@ -1,9 +1,7 @@
 package com.buffersolve.jutloader.domain.usecase
 
 import com.buffersolve.jutloader.Constants.Companion.USER_AGENT
-import com.buffersolve.jutloader.domain.model.Resolution
 import com.buffersolve.jutloader.domain.model.Season
-import com.buffersolve.jutloader.domain.model.Series
 import com.buffersolve.jutloader.domain.repository.Repository
 import io.mockk.MockKAnnotations
 import io.mockk.every

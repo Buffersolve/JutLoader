@@ -1,6 +1,5 @@
 package com.buffersolve.jutloader.presentation.ui
 
-import android.app.Application
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities.*
@@ -19,7 +18,6 @@ import javax.inject.Inject
 
 @HiltViewModel
 class JutLoaderViewModel @Inject constructor(
-    app: Application,
     private val connectivityManager: ConnectivityManager,
     private val getSeasonUseCase: GetSeasonUseCase,
     private val getSeriesUseCase: GetSeriesUseCase,
@@ -29,8 +27,7 @@ class JutLoaderViewModel @Inject constructor(
     private val getSpecificSeriesLinkUseCase: GetSpecificSeriesLinkUseCase,
     private val isOnlyOneSeasonUseCase: IsOnlyOneSeasonUseCase,
     private val downloadUseCase: DownloadUseCase,
-//    private val getDownloadProgressObserver: DownloadProgressObserver,
-) : AndroidViewModel(app) {
+) : ViewModel() {
 
     // Flow
     private val _season = MutableSharedFlow<Season>(replay = 1)
@@ -58,7 +55,6 @@ class JutLoaderViewModel @Inject constructor(
     ) = viewModelScope.launch(Dispatchers.IO) {
         if (checkInternetConnection()) {
             val seasons = getSeasonUseCase.execute(url, userAgent)
-            Log.d("SEASONVALUE11", seasons.toString())
             _season.emit(seasons)
         } else {
             _season.emit(Season(listOf("No internet connection"), mutableListOf()))
@@ -139,7 +135,6 @@ class JutLoaderViewModel @Inject constructor(
     ) = viewModelScope.launch(Dispatchers.IO) {
         if (checkInternetConnection()) {
             val isOnlyOneSeason = isOnlyOneSeasonUseCase.execute(url, userAgent)
-//            if ()
             _isOnlyOneSeason.emit(isOnlyOneSeason)
         } else {
             _season.emit(Season(listOf("No internet connection"), mutableListOf()))
