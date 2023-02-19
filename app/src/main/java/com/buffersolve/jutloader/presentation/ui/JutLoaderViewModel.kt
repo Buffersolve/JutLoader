@@ -5,7 +5,6 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities.*
 import android.net.Uri
 import android.os.Handler
-import android.util.Log
 import androidx.lifecycle.*
 import com.buffersolve.jutloader.data.provider.DownloadProgressObserver
 import com.buffersolve.jutloader.domain.model.*
@@ -46,7 +45,7 @@ class JutLoaderViewModel @Inject constructor(
     val isOnlyOneSeason: SharedFlow<OneSeason> = _isOnlyOneSeason.asSharedFlow()
 
     private val _progress = MutableSharedFlow<Long>(replay = 1)
-    val progress: SharedFlow<Long> = _progress.asSharedFlow()
+    var progress: SharedFlow<Long> = _progress.asSharedFlow()
 
     // Seasons List
     fun getSeasons(

@@ -2,43 +2,54 @@ package com.buffersolve.jutloader.presentation.ui
 
 import android.app.DownloadManager
 import android.content.ContentResolver
+import android.content.ContentUris
+import android.content.ContentValues
 import android.content.Context
-import android.content.Context.DOWNLOAD_SERVICE
+import android.database.ContentObserver
 import org.junit.jupiter.api.Test
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.Uri
 import android.os.Handler
+import android.os.Looper
 import androidx.activity.ComponentActivity
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import androidx.test.core.app.ApplicationProvider
 import com.buffersolve.jutloader.Constants.Companion.USER_AGENT
 import com.buffersolve.jutloader.data.provider.DownloadProgressObserver
 import com.buffersolve.jutloader.domain.model.*
 import com.buffersolve.jutloader.domain.usecase.*
 import io.mockk.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.take
-import kotlinx.coroutines.newSingleThreadContext
-import kotlinx.coroutines.runBlocking
+import junit.framework.TestCase
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.test.TestCoroutineScope
+import kotlinx.coroutines.test.runBlockingTest
+import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
+import org.junit.Before
 import org.junit.Rule
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.shadows.ShadowSystemServiceRegistry
+
+@OptIn(ExperimentalCoroutinesApi::class)
 
 class JutLoaderViewModelTest {
 
     @get:Rule
     val rule = InstantTaskExecutorRule()
 
-    @get:Rule
-    val mainDispatcherRule = MainDispatcherRule()
+//    @get:Rule
+//    val mainDispatcherRule = MainDispatcherRule()
 
-    // private val mockConnectivityManager: ConnectivityManager = mockk(relaxed = true)
     private val mockConnectivityManager: ConnectivityManager = mockk()
     private val mockGetSeasonUseCase: GetSeasonUseCase = mockk()
     private val mockGetSeriesUseCase: GetSeriesUseCase = mockk()
@@ -80,11 +91,11 @@ class JutLoaderViewModelTest {
 
     }
 
-    @After
+    @AfterEach
     fun tearDown() = unmockkAll()
 
     @Test
-    fun `getSeasons emits result when getSeasonUseCase returns valid result`() = runBlocking {
+    fun `getSeasons emits result when getSeasonUseCase returns valid result`() = runTest {
 
         val url = "https://example.com"
         val userAgent = USER_AGENT
@@ -100,7 +111,7 @@ class JutLoaderViewModelTest {
     }
 
     @Test
-    fun `getSeries emits result when getSeriesUseCase returns valid result`() = runBlocking {
+    fun `getSeries emits result when getSeriesUseCase returns valid result`() = runTest {
 
         val url = "https://example.com"
         val userAgent = USER_AGENT
@@ -117,7 +128,7 @@ class JutLoaderViewModelTest {
 
     @Test
     fun `getOnlyOneSeasons emits result when getOnlyOneSeasonsUseCase returns valid result`() =
-        runBlocking {
+        runTest {
 
             val url = "https://example.com"
             val userAgent = USER_AGENT
@@ -134,7 +145,7 @@ class JutLoaderViewModelTest {
 
     @Test
     fun `getOnlyOneSeries emits result when getOnlyOneSeriesUseCase returns valid result`() =
-        runBlocking {
+        runTest {
 
             val url = "https://example.com"
             val userAgent = USER_AGENT
@@ -151,7 +162,7 @@ class JutLoaderViewModelTest {
 
     @Test
     fun `getResolution emits result when getResolutionUseCase returns valid result`() =
-        runBlocking {
+        runTest {
 
             val url = "https://testJutSu.com"
             val userAgent = USER_AGENT
@@ -168,7 +179,7 @@ class JutLoaderViewModelTest {
 
     @Test
     fun `getSpecificLinkSeries emits result when getSpecificLinkSeriesUseCase returns valid result`() =
-        runBlocking {
+        runTest {
 
             val listOfLinks = listOf("https://testJutSu.com", "https://testJutSu.com2")
             val userAgent = USER_AGENT
@@ -199,7 +210,7 @@ class JutLoaderViewModelTest {
 
     @Test
     fun `isOnlyOneSeason emits result when isOnlyOneSeasonUseCase returns valid result`() =
-        runBlocking {
+        runTest {
 
             val url = "https://testJutSu.com"
             val userAgent = USER_AGENT
@@ -237,65 +248,46 @@ class JutLoaderViewModelTest {
         verify { mockDownloadUseCase.execute(userAgent, linkOfConcreteSeries, names) }
     }
 
-    // Try RoboElectric
-//    @Test
-//    fun progressObserveTest() = runBlocking {
-//
-//        // Mock objects
-//        val context: Context = mockk()
-//        val handler: Handler = mockk()
-//        val contentResolver: ContentResolver = mockk()
-//        val observer: DownloadProgressObserver = mockk()
-////        var progress: Flow<Int> = flowOf(50)
-//
-//        val mockDownloadManager: DownloadManager = mockk()
-//
-//        // Uri mock
-//        mockkStatic(Uri::class)
-//        val mockUri: Uri = mockk()
-//        every { Uri.parse(any()) } returns mockUri
-//
-//        // Context
-//        every { context.getSystemService(DOWNLOAD_SERVICE) } returns mockDownloadManager
-//        every { context.contentResolver } returns contentResolver
-//        every { contentResolver.registerContentObserver(mockUri, false, observer) }
-//
-//
-//
-//
-//        // Mock the registerContentObserver method
-//        every {
-//            contentResolver.registerContentObserver(
-//                any(),
-//                any(),
-//                observer
-//            )
-//        } just Runs
-//
-//        // Mock the collect method of the progress Flow
-////        coEvery { observer.progress.collect() }
-//
-//        val downloadId = 123L
-//
-//        // Act
-//        viewModel.progressObserve(context, handler, downloadId).join()
-//
-//        // Assert
-//        verify {
-//            contentResolver.registerContentObserver(
-////                mockUri.path,
-////                Uri.parse("content://downloads/all_downloads/$downloadId"),
-//                mockUri,
-//                true,
-//                observer
-//            )
-//        }
-//
-//        viewModel.progress.take(1).collect { result ->
-//            assertEquals(50, result)
-//        }
-//    }
+    @Test
+    fun `test progress observe`() = runTest {
+
+        val context: Context = mockk()
+//        val dm: DownloadManager = mockk(relaxed = true)
+        val handler: Handler = mockk(relaxed = true)
+        val downloadId = 1L
+//        val downloadObserver = mockk<DownloadProgressObserver>()
+        val downloadObserver = DownloadProgressObserver(context, handler, downloadId)
+        val contentResolver = mockk<ContentResolver>(relaxed = true)
+        val mockUri: Uri = mockk()
+        mockkStatic(Uri::class)
+        every { Uri.parse("content://downloads/all_downloads/$downloadId") } returns mockUri
+        every {
+            context.contentResolver
+        } returns contentResolver
+
+        every {
+            contentResolver.registerContentObserver(
+                mockUri,
+                true,
+                downloadObserver
+            )
+        } returns Unit
+        val progressFlow = MutableStateFlow(0L)
+        viewModel.progressObserve(context, handler, downloadId).join()
+        progressFlow.emit(10)
+
+        verify {
+            contentResolver.registerContentObserver(
+                mockUri,
+                true,
+                downloadObserver
+            )
+            downloadObserver.progress
+        }
+    }
 
 }
+
+
 
 
