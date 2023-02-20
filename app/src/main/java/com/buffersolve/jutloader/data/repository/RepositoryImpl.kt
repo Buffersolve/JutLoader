@@ -24,6 +24,7 @@ class RepositoryImpl : Repository {
     override fun getOnlyOneSeriesUseCase(url: String, userAgent: String): Series {
         return GetOnlyOneSeasonSeries().execute(url, userAgent)
     }
+
     override fun isOnlyOneSeasonUseCase(url: String, userAgent: String): OneSeason {
         return IsOnlyOneSeasons().execute(url, userAgent)
     }
