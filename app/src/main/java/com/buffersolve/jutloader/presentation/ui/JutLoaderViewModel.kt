@@ -69,7 +69,7 @@ class JutLoaderViewModel @Inject constructor(
             val series = getSeriesUseCase.execute(url, userAgent)
             _series.emit(series)
         } else {
-            _season.emit(Season(listOf("No internet connection"), mutableListOf()))
+            _series.emit(Series(listOf("No internet connection"), mutableListOf()))
         }
     }
 

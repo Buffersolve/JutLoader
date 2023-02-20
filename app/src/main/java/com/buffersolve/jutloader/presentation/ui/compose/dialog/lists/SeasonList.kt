@@ -74,20 +74,6 @@ fun SeasonPeakList(
                                         }
                                     }
                                 }
-
-//                                viewModel.isOnlyOneSeason.observe(viewLifecycleOwner) {
-//                                    if (it) {
-//                                        viewModel.getOnlyOneSeries(
-//                                            url = input,
-//                                            userAgent = userAgent
-//                                        )
-//                                    } else {
-//                                        viewModel.getSeries(
-//                                            url = linkSeriesList[index],
-//                                            userAgent = userAgent
-//                                        )
-//                                    }
-//                                }
                                 controller.navigate("SeriesPeakList")
                             }
                         }

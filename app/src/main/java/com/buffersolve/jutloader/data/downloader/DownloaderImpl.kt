@@ -19,7 +19,6 @@ class DownloaderImpl(
     ) as DownloadManager
 
     override fun download(
-//        url: List<String>,
         userAgent: String,
         linkOfConcreteSeries: List<String>,
         names: MutableList<String>
@@ -29,7 +28,6 @@ class DownloaderImpl(
         val deleteDuplicateNames = LinkedHashSet(names).toMutableList()
         val deleteDuplicateLinks = LinkedHashSet(linkOfConcreteSeries).toMutableList()
 
-        val requestList = mutableListOf<Long>()
         var requestLong = 1L
 
         for (url in deleteDuplicateLinks) {
@@ -46,11 +44,7 @@ class DownloaderImpl(
                         )
                     )
                 )
-
-//            val enqueue = downloadManager.enqueue(request)
             requestLong = downloadManager.enqueue(request)
-//            requestList.add(enqueue)
-//            return enqueue
         }
 
         return requestLong

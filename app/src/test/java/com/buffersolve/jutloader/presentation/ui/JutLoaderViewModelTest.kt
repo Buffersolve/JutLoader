@@ -1,54 +1,33 @@
 package com.buffersolve.jutloader.presentation.ui
 
-import android.app.DownloadManager
 import android.content.ContentResolver
-import android.content.ContentUris
-import android.content.ContentValues
 import android.content.Context
-import android.database.ContentObserver
 import org.junit.jupiter.api.Test
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.Uri
 import android.os.Handler
-import android.os.Looper
-import androidx.activity.ComponentActivity
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import androidx.test.core.app.ApplicationProvider
 import com.buffersolve.jutloader.Constants.Companion.USER_AGENT
 import com.buffersolve.jutloader.data.provider.DownloadProgressObserver
 import com.buffersolve.jutloader.domain.model.*
 import com.buffersolve.jutloader.domain.usecase.*
 import io.mockk.*
-import junit.framework.TestCase
 import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.BufferOverflow
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.test.TestCoroutineScope
-import kotlinx.coroutines.test.runBlockingTest
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
-import org.junit.After
-import org.junit.Before
 import org.junit.Rule
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
-import org.junit.runner.RunWith
-import org.robolectric.RobolectricTestRunner
-import org.robolectric.shadows.ShadowSystemServiceRegistry
 
 @OptIn(ExperimentalCoroutinesApi::class)
-
 class JutLoaderViewModelTest {
 
     @get:Rule
     val rule = InstantTaskExecutorRule()
-
-//    @get:Rule
-//    val mainDispatcherRule = MainDispatcherRule()
 
     private val mockConnectivityManager: ConnectivityManager = mockk()
     private val mockGetSeasonUseCase: GetSeasonUseCase = mockk()
@@ -59,10 +38,13 @@ class JutLoaderViewModelTest {
     private val mockGetSpecificSeriesLinkUseCase: GetSpecificSeriesLinkUseCase = mockk()
     private val mockIsOnlyOneSeasonUseCase: IsOnlyOneSeasonUseCase = mockk()
     private val mockDownloadUseCase = mockk<DownloadUseCase>()
+    private val mockNetwork: Network = mockk()
+    private val mockNetworkCapabilities: NetworkCapabilities = mockk()
+
+    @OptIn(DelicateCoroutinesApi::class)
+    private val mainThreadSurrogate = newSingleThreadContext("UI thread")
 
     private lateinit var viewModel: JutLoaderViewModel
-
-    private val mainThreadSurrogate = newSingleThreadContext("UI thread")
 
     @BeforeEach
     fun setUp() {
@@ -71,19 +53,16 @@ class JutLoaderViewModelTest {
 
         MockKAnnotations.init(this)
         viewModel = JutLoaderViewModel(
-            mockConnectivityManager,
-            mockGetSeasonUseCase,
-            mockGetSeriesUseCase,
-            mockGetOnlyOneSeasonsUseCase,
-            mockGetOnlyOneSeriesUseCase,
-            mockGetResolutionUseCase,
-            mockGetSpecificSeriesLinkUseCase,
-            mockIsOnlyOneSeasonUseCase,
-            mockDownloadUseCase
+            connectivityManager = mockConnectivityManager,
+            getSeasonUseCase = mockGetSeasonUseCase,
+            getSeriesUseCase = mockGetSeriesUseCase,
+            getOnlyOneSeasonsUseCase = mockGetOnlyOneSeasonsUseCase,
+            getOnlyOneSeriesUseCase = mockGetOnlyOneSeriesUseCase,
+            getResolutionUseCase = mockGetResolutionUseCase,
+            getSpecificSeriesLinkUseCase = mockGetSpecificSeriesLinkUseCase,
+            isOnlyOneSeasonUseCase = mockIsOnlyOneSeasonUseCase,
+            downloadUseCase = mockDownloadUseCase
         )
-
-        val mockNetwork: Network = mockk()
-        val mockNetworkCapabilities: NetworkCapabilities = mockk()
 
         every { mockConnectivityManager.activeNetwork } returns mockNetwork
         every { mockConnectivityManager.getNetworkCapabilities(mockNetwork) } returns mockNetworkCapabilities
@@ -111,6 +90,23 @@ class JutLoaderViewModelTest {
     }
 
     @Test
+    fun `getSeasons emits no internet`() = runTest {
+
+        every { mockConnectivityManager.activeNetwork } returns mockNetwork
+        every { mockConnectivityManager.getNetworkCapabilities(mockNetwork) } returns mockNetworkCapabilities
+        every { mockNetworkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) } returns false
+        val url = "https://example.com"
+        val userAgent = USER_AGENT
+
+        viewModel.getSeasons(url, userAgent)
+        val expected = Season(listOf("No internet connection"), mutableListOf())
+
+        viewModel.season.take(1).collect { result ->
+            assertEquals(expected, result)
+        }
+    }
+
+    @Test
     fun `getSeries emits result when getSeriesUseCase returns valid result`() = runTest {
 
         val url = "https://example.com"
@@ -120,6 +116,23 @@ class JutLoaderViewModelTest {
         every { mockGetSeriesUseCase.execute(url, userAgent) } returns series
 
         viewModel.getSeries(url, userAgent)
+
+        viewModel.series.take(1).collect { result ->
+            assertEquals(expected, result)
+        }
+    }
+
+    @Test
+    fun `getSeries emits no internet`() = runTest {
+
+        every { mockConnectivityManager.activeNetwork } returns mockNetwork
+        every { mockConnectivityManager.getNetworkCapabilities(mockNetwork) } returns mockNetworkCapabilities
+        every { mockNetworkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) } returns false
+        val url = "https://example.com"
+        val userAgent = USER_AGENT
+
+        viewModel.getSeries(url, userAgent)
+        val expected = Series(listOf("No internet connection"), mutableListOf())
 
         viewModel.series.take(1).collect { result ->
             assertEquals(expected, result)
@@ -144,6 +157,23 @@ class JutLoaderViewModelTest {
         }
 
     @Test
+    fun `getOnlyOneSeasons emits no internet`() = runTest {
+
+        every { mockConnectivityManager.activeNetwork } returns mockNetwork
+        every { mockConnectivityManager.getNetworkCapabilities(mockNetwork) } returns mockNetworkCapabilities
+        every { mockNetworkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) } returns false
+        val url = "https://example.com"
+        val userAgent = USER_AGENT
+
+        viewModel.getOnlyOneSeasons(url, userAgent)
+        val expected = Season(listOf("No internet connection"), mutableListOf())
+
+        viewModel.season.take(1).collect { result ->
+            assertEquals(expected, result)
+        }
+    }
+
+    @Test
     fun `getOnlyOneSeries emits result when getOnlyOneSeriesUseCase returns valid result`() =
         runTest {
 
@@ -161,6 +191,23 @@ class JutLoaderViewModelTest {
         }
 
     @Test
+    fun `getOnlyOneSeries emits no internet`() = runTest {
+
+        every { mockConnectivityManager.activeNetwork } returns mockNetwork
+        every { mockConnectivityManager.getNetworkCapabilities(mockNetwork) } returns mockNetworkCapabilities
+        every { mockNetworkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) } returns false
+        val url = "https://example.com"
+        val userAgent = USER_AGENT
+
+        viewModel.getOnlyOneSeries(url, userAgent)
+        val expected = Series(listOf("No internet connection"), mutableListOf())
+
+        viewModel.series.take(1).collect { result ->
+            assertEquals(expected, result)
+        }
+    }
+
+    @Test
     fun `getResolution emits result when getResolutionUseCase returns valid result`() =
         runTest {
 
@@ -176,6 +223,23 @@ class JutLoaderViewModelTest {
                 assertEquals(expected, result)
             }
         }
+
+    @Test
+    fun `getResolution emits no internet`() = runTest {
+
+        every { mockConnectivityManager.activeNetwork } returns mockNetwork
+        every { mockConnectivityManager.getNetworkCapabilities(mockNetwork) } returns mockNetworkCapabilities
+        every { mockNetworkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) } returns false
+        val url = "https://example.com"
+        val userAgent = USER_AGENT
+
+        viewModel.getResolution(url, userAgent)
+        val expected = Resolution(listOf("No internet connection"))
+
+        viewModel.resolution.take(1).collect { result ->
+            assertEquals(expected, result)
+        }
+    }
 
     @Test
     fun `getSpecificLinkSeries emits result when getSpecificLinkSeriesUseCase returns valid result`() =
@@ -209,6 +273,24 @@ class JutLoaderViewModelTest {
         }
 
     @Test
+    fun `getSpecificLinkSeries emits no internet`() = runTest {
+
+        every { mockConnectivityManager.activeNetwork } returns mockNetwork
+        every { mockConnectivityManager.getNetworkCapabilities(mockNetwork) } returns mockNetworkCapabilities
+        every { mockNetworkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) } returns false
+        val listOfLinks = listOf("https://testJutSu.com", "https://testJutSu.com2")
+        val userAgent = USER_AGENT
+        val resolution = "1080p"
+
+        viewModel.getSpecificLinkSeries(listOfLinks, userAgent, resolution)
+        val expected = SpecificSeries(listOf("No internet connection"), mutableListOf())
+
+        viewModel.specificLinks.take(1).collect { result ->
+            assertEquals(expected, result)
+        }
+    }
+
+    @Test
     fun `isOnlyOneSeason emits result when isOnlyOneSeasonUseCase returns valid result`() =
         runTest {
 
@@ -226,6 +308,23 @@ class JutLoaderViewModelTest {
                 assertEquals(expected, result)
             }
         }
+
+    @Test
+    fun `isOnlyOneSeason emits no internet`() = runTest {
+
+        every { mockConnectivityManager.activeNetwork } returns mockNetwork
+        every { mockConnectivityManager.getNetworkCapabilities(mockNetwork) } returns mockNetworkCapabilities
+        every { mockNetworkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) } returns false
+        val url = "https://testJutSu.com"
+        val userAgent = USER_AGENT
+
+        viewModel.isOnlyOneSeason(url, userAgent)
+        val expected = Season(listOf("No internet connection"), mutableListOf())
+
+        viewModel.season.take(1).collect { result ->
+            assertEquals(expected, result)
+        }
+    }
 
     @Test
     fun downloadTest() {
@@ -252,19 +351,18 @@ class JutLoaderViewModelTest {
     fun `test progress observe`() = runTest {
 
         val context: Context = mockk()
-//        val dm: DownloadManager = mockk(relaxed = true)
         val handler: Handler = mockk(relaxed = true)
         val downloadId = 1L
-//        val downloadObserver = mockk<DownloadProgressObserver>()
         val downloadObserver = DownloadProgressObserver(context, handler, downloadId)
         val contentResolver = mockk<ContentResolver>(relaxed = true)
         val mockUri: Uri = mockk()
+        val progressFlow = MutableStateFlow(0L)
         mockkStatic(Uri::class)
+
         every { Uri.parse("content://downloads/all_downloads/$downloadId") } returns mockUri
         every {
             context.contentResolver
         } returns contentResolver
-
         every {
             contentResolver.registerContentObserver(
                 mockUri,
@@ -272,7 +370,7 @@ class JutLoaderViewModelTest {
                 downloadObserver
             )
         } returns Unit
-        val progressFlow = MutableStateFlow(0L)
+
         viewModel.progressObserve(context, handler, downloadId).join()
         progressFlow.emit(10)
 

@@ -3,6 +3,7 @@ plugins {
     id 'org.jetbrains.kotlin.android'
     id 'kotlin-kapt'
     id 'dagger.hilt.android.plugin'
+    id 'jacoco'
 }
 
 android {
@@ -27,6 +28,9 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
+        debug {
+            testCoverageEnabled true
+        }
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -48,7 +52,7 @@ android {
         }
     }
     testOptions {
-        unitTests.returnDefaultValues = true
+//        unitTests.returnDefaultValues = true
         unitTests.all {
             useJUnitPlatform()
 //            includeAndroidResources = true
@@ -102,6 +106,10 @@ dependencies {
     androidTestImplementation 'org.robolectric:robolectric:4.9'
     androidTestImplementation 'io.mockk:mockk-android:1.13.4'
     androidTestImplementation 'io.mockk:mockk-agent:1.13.4'
+    androidTestImplementation "org.jacoco:org.jacoco.core:0.8.8"
+
+    // reflect
+    implementation "org.jetbrains.kotlin:kotlin-reflect:1.8.10"
 
 //    testImplementation 'org.mockito:mockito-core:5.1.1'
 //    testImplementation 'org.mockito.kotlin:mockito-kotlin:4.1.0'
