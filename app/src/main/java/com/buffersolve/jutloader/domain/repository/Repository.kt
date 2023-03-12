@@ -1,9 +1,6 @@
 package com.buffersolve.jutloader.domain.repository
 
-import com.buffersolve.jutloader.domain.model.Resolution
-import com.buffersolve.jutloader.domain.model.Season
-import com.buffersolve.jutloader.domain.model.Series
-import com.buffersolve.jutloader.domain.model.SpecificSeries
+import com.buffersolve.jutloader.domain.model.*
 
 interface Repository {
 
@@ -15,10 +12,12 @@ interface Repository {
 
     fun getOnlyOneSeriesUseCase(url: String, userAgent: String): Series
 
-    fun isOnlyOneSeasonUseCase(url: String, userAgent: String): Boolean
+    fun isOnlyOneSeasonUseCase(url: String, userAgent: String): OneSeason
 
     fun getResolutionUseCase(url: String, userAgent: String): Resolution
 
     fun getSpecificSeriesLinkUseCase(listOfLinks: List<String>, userAgent: String, resolution: String): SpecificSeries
+
+//    fun getDownloadProgressObserverProgress(context: Context, handler: Handler, downloadId: Long) : DownloadProgressObserver
 
 }

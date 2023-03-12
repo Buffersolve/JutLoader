@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.webkit.WebView
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -39,6 +40,7 @@ import com.buffersolve.jutloader.presentation.ui.compose.TextField
 import com.buffersolve.jutloader.presentation.ui.compose.dialog.NavigationDialog
 import com.buffersolve.jutloader.presentation.ui.compose.landscape.PortraitScreenOnly
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 
 lateinit var webViewAgent: String
 
@@ -66,7 +68,8 @@ class JutLoaderActivity : ComponentActivity() {
                 BarCardProgress(
                     viewLifecycleOwner = this@JutLoaderActivity,
                     context = applicationContext,
-                    viewModel = viewModel
+                    viewModel = viewModel,
+                    lifecycleScope = lifecycleScope
                 )
 
                 // Naruto Bottom
@@ -76,7 +79,7 @@ class JutLoaderActivity : ComponentActivity() {
 
         // UserAgent
         webViewAgent = WebView(this).settings.userAgentString
-
+        Log.d("UserAgent", webViewAgent)
     }
 
 }
@@ -88,6 +91,7 @@ fun BarCardProgress(
     viewLifecycleOwner: LifecycleOwner,
     context: Context,
     viewModel: JutLoaderViewModel,
+    lifecycleScope: LifecycleCoroutineScope,
 ) {
     Scaffold(
         topBar = {
@@ -112,15 +116,27 @@ fun BarCardProgress(
                     scaffoldPadding = it,
                     viewLifecycleOwner = viewLifecycleOwner,
                     context = context,
-                    viewModel = viewModel
+                    viewModel = viewModel,
+                    lifecycleScope = lifecycleScope
                 )
 
                 val progressState = remember {
                     mutableStateOf(0L)
                 }
-                viewModel.progress.observe(viewLifecycleOwner) { progress ->
-                    progressState.value = progress
+
+                LaunchedEffect(key1 = 1) {
+                    lifecycleScope.launch {
+                        viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                            viewModel.progress.collect {
+                                progressState.value = it
+
+                            }
+                        }
+                    }
                 }
+//                viewModel.progress.observe(viewLifecycleOwner) { progress ->
+//                    progressState.value = progress
+//                }
                 // Progress
                 DownloadProgressBar(
                     progressState.value * 0.01.toFloat()
@@ -137,7 +153,8 @@ fun Card(
     scaffoldPadding: PaddingValues,
     viewLifecycleOwner: LifecycleOwner,
     context: Context,
-    viewModel: JutLoaderViewModel
+    viewModel: JutLoaderViewModel,
+    lifecycleScope: LifecycleCoroutineScope
 ) {
 
     // Card animation & Arrow
@@ -189,7 +206,8 @@ fun Card(
             // Btn
             ButtonSearch(
                 viewLifecycleOwner = viewLifecycleOwner,
-                viewModel = viewModel
+                viewModel = viewModel,
+                lifecycleScope = lifecycleScope
             )
 
             // Dialog with choice
@@ -197,7 +215,8 @@ fun Card(
                 viewLifecycleOwner = viewLifecycleOwner,
                 userAgent = webViewAgent,
                 context = context,
-                viewModel = viewModel
+                viewModel = viewModel,
+                lifecycleScope = lifecycleScope,
             )
 
             // CardInfo
@@ -304,7 +323,10 @@ fun DownloadProgressBar(progress: Float) {
             Alignment.Center
         ) {
             Column {
-                Text(modifier = Modifier.align(CenterHorizontally), text = "Download Progress")
+                Text(
+                    modifier = Modifier.align(CenterHorizontally),
+                    text = "Download Progress"
+                )
                 LinearProgressIndicator(
                     modifier = Modifier
                         .padding(top = 10.dp, start = 40.dp, end = 40.dp)

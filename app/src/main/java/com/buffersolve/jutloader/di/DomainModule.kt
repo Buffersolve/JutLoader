@@ -60,4 +60,9 @@ class DomainModule {
         return DownloadUseCase(downloader = downloader)
     }
 
+//    @Provides
+//    fun provideGetProgress(repository: Repository) : GetDownloadProgressObserverUseCase {
+//        return GetDownloadProgressObserverUseCase(repository = repository)
+//    }
+
 }

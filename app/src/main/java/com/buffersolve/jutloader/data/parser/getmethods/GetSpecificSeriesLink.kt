@@ -23,23 +23,45 @@ class GetSpecificSeriesLink {
                 userAgent = userAgent
             )
 
+            if (doc.isSuccess) {
+                val name =
+                    doc.getOrThrow()
+                        .select("h1[class=\"header_video allanimevideo the_hildi anime_padding_for_title_post\"]")
+                        .eachText()
+                        .map { it.replaceFirst("Смотреть", "") }
+                        .map { it.replaceFirst(" ", "") }
+                listOfSeriesName.addAll(name)
+
+                val resSelect = doc.getOrThrow().select("source[res=\"${resolution}\"]")
+                    .attr("src")
+                linkToSpecificSeries.add(resSelect)
+
+
+            } else {
+
+                linkToSpecificSeries.toList()
+                listOfSeriesName.toList()
+
+            }
+
 //            val name = doc.select("span[itemprop=\"name\"]").eachText()
-            val name =
-                doc.select("h1[class=\"header_video allanimevideo the_hildi anime_padding_for_title_post\"]")
-                    .eachText()
-                    .map { it.replaceFirst("Смотреть", "") }
-                    .map { it.replaceFirst(" ", "") }
-            listOfSeriesName.addAll(name)
-
-
-            val resSelect = doc.select("source[res=\"${resolution}\"]")
-                .attr("src")
-            linkToSpecificSeries.add(resSelect)
+//            val name =
+//                doc.select("h1[class=\"header_video allanimevideo the_hildi anime_padding_for_title_post\"]")
+//                    .eachText()
+//                    .map { it.replaceFirst("Смотреть", "") }
+//                    .map { it.replaceFirst(" ", "") }
+//            listOfSeriesName.addAll(name)
+//
+//
+//            val resSelect = doc.select("source[res=\"${resolution}\"]")
+//                .attr("src")
+//            linkToSpecificSeries.add(resSelect)
+//
+//        }
+//
+//        return SpecificSeries(linkToSpecificSeries, listOfSeriesName)
 
         }
-
         return SpecificSeries(linkToSpecificSeries, listOfSeriesName)
-
     }
-
 }

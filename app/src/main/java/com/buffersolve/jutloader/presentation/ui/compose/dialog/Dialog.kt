@@ -10,12 +10,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -24,43 +25,103 @@ import com.buffersolve.jutloader.presentation.ui.*
 import com.buffersolve.jutloader.presentation.ui.compose.dialog.lists.ResolutionPeakList
 import com.buffersolve.jutloader.presentation.ui.compose.dialog.lists.SeasonPeakList
 import com.buffersolve.jutloader.presentation.ui.compose.dialog.lists.SeriesPeakList
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 
 @Composable
 fun NavigationDialog(
     viewLifecycleOwner: LifecycleOwner,
     userAgent: String,
-//    exceptionState: MutableState<String>,
     context: Context,
-    viewModel: JutLoaderViewModel
+    viewModel: JutLoaderViewModel,
+    lifecycleScope: LifecycleCoroutineScope,
 ) {
 
     // Lists
     val seasonList = remember { mutableStateOf(listOf<String>()) }
     val seasonLink = remember { mutableStateOf(listOf<String>()) }
-    viewModel.season.observe(viewLifecycleOwner) {
-        seasonList.value = it.season
-        seasonLink.value = it.seasonLink
-    }
+//    viewModel.season.observe(viewLifecycleOwner) {
+//        seasonList.value = it.season
+//        seasonLink.value = it.seasonLink
+//    }
 
     // Series
     val seriesList = remember { mutableStateOf(listOf<String>()) }
     val seriesLink = remember { mutableStateOf(listOf<String>()) }
-    viewModel.series.observe(viewLifecycleOwner) {
-        seriesList.value = it.seria
-        seriesLink.value = it.seriaLink
-    }
+//    viewModel.series.observe(viewLifecycleOwner) {
+//        seriesList.value = it.seria
+//        seriesLink.value = it.seriaLink
+//    }
 
     // Resolution
     val resList = remember { mutableStateOf(listOf<String>()) }
-    viewModel.resolution.observe(viewLifecycleOwner) {
-        resList.value = it.res
-    }
+//    viewModel.resolution.observe(viewLifecycleOwner) {
+//        resList.value = it.res
+//    }
 
     // Exception
-    Parser.exception.observe(viewLifecycleOwner) {
-        ExceptionState.add(it)
-        if (it.isNotEmpty()) seasonList.value = listOf(it)
+    LaunchedEffect(key1 = 1) {
+
+        // Exception
+        lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.isOnlyOneSeason.collect {
+                    Log.d("EXCEPTIONNNN22", it.toString())
+                    ExceptionState.add(it.exception.toString())
+                    if (it.exception == true) seasonList.value = listOf("Error, try a different name")
+                    Log.d("EXCEPTIONNNN22", ExceptionState.last().toString())
+
+                }
+//                Parser.exception.collect { exception ->
+//                    ExceptionState.add(exception)
+//                    if (exception.isNotEmpty()) seasonList.value = listOf(exception)
+//                }
+            }
+        }
+
+        // Season
+        lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.season.collect {
+                    Log.d("SEASONVALUE", it.toString())
+                    seasonList.value = it.season
+                    seasonLink.value = it.seasonLink
+                }
+            }
+        }
+
+        // Series
+        lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.series.collect {
+                    Log.d("SEASONVALUE", it.toString())
+                    seriesList.value = it.seria
+                    seriesLink.value = it.seriaLink
+                }
+            }
+        }
+
+        // Resolution
+        lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.resolution.collect {
+                    Log.d("SEASONVALUE", it.toString())
+                    resList.value = it.res
+
+                }
+            }
+        }
+
+
     }
+
+
+//    Parser.exception.observe(viewLifecycleOwner) {
+//        ExceptionState.add(it)
+//        if (it.isNotEmpty()) seasonList.value = listOf(it)
+//    }
 
     val controller = rememberNavController()
 
@@ -112,15 +173,14 @@ fun NavigationDialog(
                             seriesList.value,
                             userAgent,
                             viewLifecycleOwner,
-                            viewModel
-//                            exceptionState
+                            viewModel,
+                            lifecycleScope
                         )
                     }
                     composable("SeriesPeakList") {
                         SeriesPeakList(
                             controller,
                             seriesList.value,
-//                            checkedList,
                             seriesLink.value,
                             userAgent,
                         )
@@ -133,8 +193,8 @@ fun NavigationDialog(
                             viewLifecycleOwner,
                             resList.value,
                             context,
-                            viewModel
-//                            specificLink = specificLink.value
+                            viewModel,
+                            lifecycleScope
                         )
                     }
                 }

@@ -24,7 +24,8 @@ class RepositoryImpl : Repository {
     override fun getOnlyOneSeriesUseCase(url: String, userAgent: String): Series {
         return GetOnlyOneSeasonSeries().execute(url, userAgent)
     }
-    override fun isOnlyOneSeasonUseCase(url: String, userAgent: String): Boolean {
+
+    override fun isOnlyOneSeasonUseCase(url: String, userAgent: String): OneSeason {
         return IsOnlyOneSeasons().execute(url, userAgent)
     }
 
@@ -35,4 +36,10 @@ class RepositoryImpl : Repository {
     override fun getSpecificSeriesLinkUseCase(listOfLinks: List<String>, userAgent: String, resolution: String): SpecificSeries {
         return GetSpecificSeriesLink().execute(listOfLinks, userAgent, resolution)
     }
+
+//    override fun getProgress(context: Context, handler: Handler, downloadId: Long): StateFlow<Long> {
+//        return DownloadProgressObserver(context, handler, downloadId).getProgress()
+//    }
+
+
 }

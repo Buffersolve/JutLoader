@@ -12,11 +12,16 @@ class GetOnlyOneSeason {
             userAgent = userAgent
         )
 
-        val season =
-            doc.select("h1[class=\"header_video allanimevideo anime_padding_for_title\"]")
-                .eachText()
+        if (doc.isSuccess) {
+            val season =
+                doc.getOrThrow().select("h1[class=\"header_video allanimevideo anime_padding_for_title\"]")
+                    .eachText()
 
-        return Season(season, mutableListOf(""))
+            return Season(season, mutableListOf(""))
+        } else {
+            return Season(listOf(), mutableListOf())
+        }
+
 
 //        return Season(list, elementsSeriaLinkList)
 

@@ -13,37 +13,73 @@ class GetOnlyOneSeasonSeries {
             userAgent = userAgent
         )
 
-        val seasonSeriesGreen = doc.select("a[class=\"short-btn green video the_hildi\"]")
-            .textNodes().map { it.toString() }
-        val seasonSeriesBlack = doc.select("a[class=\"short-btn black video the_hildi\"]")
-            .textNodes().map { it.toString() }
+        if (doc.isSuccess) {
+            val seasonSeriesGreen = doc.getOrThrow().select("a[class=\"short-btn green video the_hildi\"]")
+                .textNodes().map { it.toString() }
+            val seasonSeriesBlack = doc.getOrThrow().select("a[class=\"short-btn black video the_hildi\"]")
+                .textNodes().map { it.toString() }
 
 
-        val listSeries = mutableListOf<String>()
-        listSeries.addAll(seasonSeriesGreen)
-        listSeries.addAll(seasonSeriesBlack)
-        listSeries.toList()
+            val listSeries = mutableListOf<String>()
+            listSeries.addAll(seasonSeriesGreen)
+            listSeries.addAll(seasonSeriesBlack)
+            listSeries.toList()
 //        Log.d("SEASOLINK1111", listSeries.toString())
 
-        // Links
-        val elementsGreen: Elements = doc.select("a[class=\"short-btn green video the_hildi\"]")
-            .select("a")
-        val elementsBlack: Elements = doc.select("a[class=\"short-btn black video the_hildi\"]")
-            .select("a")
+            // Links
+            val elementsGreen: Elements = doc.getOrThrow().select("a[class=\"short-btn green video the_hildi\"]")
+                .select("a")
+            val elementsBlack: Elements = doc.getOrThrow().select("a[class=\"short-btn black video the_hildi\"]")
+                .select("a")
 
-        val elList = mutableListOf<String>()
+            val elList = mutableListOf<String>()
 
-        elementsGreen.forEach {
-            val attr = it.attr("href")
-            elList.add(attr)
+            elementsGreen.forEach {
+                val attr = it.attr("href")
+                elList.add(attr)
+            }
+
+            elementsBlack.forEach {
+                val attr = it.attr("href")
+                elList.add(attr)
+            }
+
+            return Series(seria = listSeries, seriaLink = elList)
+        } else {
+            return Series(listOf(), mutableListOf())
         }
 
-        elementsBlack.forEach {
-            val attr = it.attr("href")
-            elList.add(attr)
-        }
-
-        return Series(seria = listSeries, seriaLink = elList)
+//        val seasonSeriesGreen = doc.select("a[class=\"short-btn green video the_hildi\"]")
+//            .textNodes().map { it.toString() }
+//        val seasonSeriesBlack = doc.select("a[class=\"short-btn black video the_hildi\"]")
+//            .textNodes().map { it.toString() }
+//
+//
+//        val listSeries = mutableListOf<String>()
+//        listSeries.addAll(seasonSeriesGreen)
+//        listSeries.addAll(seasonSeriesBlack)
+//        listSeries.toList()
+////        Log.d("SEASOLINK1111", listSeries.toString())
+//
+//        // Links
+//        val elementsGreen: Elements = doc.select("a[class=\"short-btn green video the_hildi\"]")
+//            .select("a")
+//        val elementsBlack: Elements = doc.select("a[class=\"short-btn black video the_hildi\"]")
+//            .select("a")
+//
+//        val elList = mutableListOf<String>()
+//
+//        elementsGreen.forEach {
+//            val attr = it.attr("href")
+//            elList.add(attr)
+//        }
+//
+//        elementsBlack.forEach {
+//            val attr = it.attr("href")
+//            elList.add(attr)
+//        }
+//
+//        return Series(seria = listSeries, seriaLink = elList)
 
 
     }

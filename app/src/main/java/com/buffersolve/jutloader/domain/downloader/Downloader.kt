@@ -7,4 +7,5 @@ interface Downloader {
         linkOfConcreteSeries: List<String>,
         names: MutableList<String>
     ): Long
+
 }
