@@ -1,13 +1,13 @@
 package com.buffersolve.jutloader.domain.usecase
 
-import com.buffersolve.jutloader.domain.model.SpecificSeries
+import com.buffersolve.jutloader.domain.model.SpecificEpisode
 import com.buffersolve.jutloader.domain.repository.Repository
 
-class GetSpecificSeriesLinkUseCase(
+class GetSpecificEpisodesLinkUseCase(
     private val repository: Repository
 ) {
 
-    fun execute(listOfLinks: List<String>, userAgent: String, resolution: String): SpecificSeries {
+    fun execute(listOfLinks: List<String>, userAgent: String, resolution: String): SpecificEpisode {
         return repository.getSpecificSeriesLinkUseCase(listOfLinks, userAgent, resolution)
     }
 

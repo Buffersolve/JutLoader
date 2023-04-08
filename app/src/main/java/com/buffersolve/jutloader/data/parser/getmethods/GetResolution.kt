@@ -20,11 +20,6 @@ class GetResolution {
             else -> {Resolution(res = listOf())}
         }
 
-//            val res = doc.select("source")
-//                .eachAttr("res").map { it + "p" }
-//
-//        return Resolution(res)
-
     }
 
 }

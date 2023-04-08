@@ -31,11 +31,11 @@ class JutLoaderViewModelTest {
 
     private val mockConnectivityManager: ConnectivityManager = mockk()
     private val mockGetSeasonUseCase: GetSeasonUseCase = mockk()
-    private val mockGetSeriesUseCase: GetSeriesUseCase = mockk()
+    private val mockGetEpisodesUseCase: GetEpisodesUseCase = mockk()
     private val mockGetOnlyOneSeasonsUseCase: GetOnlyOneSeasonUseCase = mockk()
-    private val mockGetOnlyOneSeriesUseCase: GetOnlyOneSeriesUseCase = mockk()
+    private val mockGetOnlyOneEpisodeUseCase: GetOnlyOneEpisodeUseCase = mockk()
     private val mockGetResolutionUseCase: GetResolutionUseCase = mockk()
-    private val mockGetSpecificSeriesLinkUseCase: GetSpecificSeriesLinkUseCase = mockk()
+    private val mockGetSpecificEpisodesLinkUseCase: GetSpecificEpisodesLinkUseCase = mockk()
     private val mockIsOnlyOneSeasonUseCase: IsOnlyOneSeasonUseCase = mockk()
     private val mockDownloadUseCase = mockk<DownloadUseCase>()
     private val mockNetwork: Network = mockk()
@@ -55,11 +55,11 @@ class JutLoaderViewModelTest {
         viewModel = JutLoaderViewModel(
             connectivityManager = mockConnectivityManager,
             getSeasonUseCase = mockGetSeasonUseCase,
-            getSeriesUseCase = mockGetSeriesUseCase,
+            getEpisodesUseCase = mockGetEpisodesUseCase,
             getOnlyOneSeasonsUseCase = mockGetOnlyOneSeasonsUseCase,
-            getOnlyOneSeriesUseCase = mockGetOnlyOneSeriesUseCase,
+            getOnlyOneEpisodeUseCase = mockGetOnlyOneEpisodeUseCase,
             getResolutionUseCase = mockGetResolutionUseCase,
-            getSpecificSeriesLinkUseCase = mockGetSpecificSeriesLinkUseCase,
+            getSpecificEpisodesLinkUseCase = mockGetSpecificEpisodesLinkUseCase,
             isOnlyOneSeasonUseCase = mockIsOnlyOneSeasonUseCase,
             downloadUseCase = mockDownloadUseCase
         )
@@ -111,13 +111,13 @@ class JutLoaderViewModelTest {
 
         val url = "https://example.com"
         val userAgent = USER_AGENT
-        val series = Series(listOf("Episode 1"), mutableListOf("/Episode 1/", "/Episode 2/"))
-        val expected = Series(listOf("Episode 1"), mutableListOf("/Episode 1/", "/Episode 2/"))
-        every { mockGetSeriesUseCase.execute(url, userAgent) } returns series
+        val episodes = Episodes(listOf("Episode 1"), mutableListOf("/Episode 1/", "/Episode 2/"))
+        val expected = Episodes(listOf("Episode 1"), mutableListOf("/Episode 1/", "/Episode 2/"))
+        every { mockGetEpisodesUseCase.execute(url, userAgent) } returns episodes
 
         viewModel.getSeries(url, userAgent)
 
-        viewModel.series.take(1).collect { result ->
+        viewModel.episodes.take(1).collect { result ->
             assertEquals(expected, result)
         }
     }
@@ -132,9 +132,9 @@ class JutLoaderViewModelTest {
         val userAgent = USER_AGENT
 
         viewModel.getSeries(url, userAgent)
-        val expected = Series(listOf("No internet connection"), mutableListOf())
+        val expected = Episodes(listOf("No internet connection"), mutableListOf())
 
-        viewModel.series.take(1).collect { result ->
+        viewModel.episodes.take(1).collect { result ->
             assertEquals(expected, result)
         }
     }
@@ -179,13 +179,13 @@ class JutLoaderViewModelTest {
 
             val url = "https://example.com"
             val userAgent = USER_AGENT
-            val series = Series(listOf("Episode 1"), mutableListOf("/Episode 1/", "/Episode 2/"))
-            val expected = Series(listOf("Episode 1"), mutableListOf("/Episode 1/", "/Episode 2/"))
-            every { mockGetOnlyOneSeriesUseCase.execute(url, userAgent) } returns series
+            val episodes = Episodes(listOf("Episode 1"), mutableListOf("/Episode 1/", "/Episode 2/"))
+            val expected = Episodes(listOf("Episode 1"), mutableListOf("/Episode 1/", "/Episode 2/"))
+            every { mockGetOnlyOneEpisodeUseCase.execute(url, userAgent) } returns episodes
 
             viewModel.getOnlyOneSeries(url, userAgent)
 
-            viewModel.series.take(1).collect { result ->
+            viewModel.episodes.take(1).collect { result ->
                 assertEquals(expected, result)
             }
         }
@@ -200,9 +200,9 @@ class JutLoaderViewModelTest {
         val userAgent = USER_AGENT
 
         viewModel.getOnlyOneSeries(url, userAgent)
-        val expected = Series(listOf("No internet connection"), mutableListOf())
+        val expected = Episodes(listOf("No internet connection"), mutableListOf())
 
-        viewModel.series.take(1).collect { result ->
+        viewModel.episodes.take(1).collect { result ->
             assertEquals(expected, result)
         }
     }
@@ -248,22 +248,22 @@ class JutLoaderViewModelTest {
             val listOfLinks = listOf("https://testJutSu.com", "https://testJutSu.com2")
             val userAgent = USER_AGENT
             val resolution = "1080p"
-            val specificSeries = SpecificSeries(
+            val specificEpisode = SpecificEpisode(
                 listOf("https://testJutSu.com", "https://testJutSu.com2"),
                 listOf("Episode 1", "Episode 2")
             )
 
-            val expected = SpecificSeries(
+            val expected = SpecificEpisode(
                 listOf("https://testJutSu.com", "https://testJutSu.com2"),
                 listOf("Episode 1", "Episode 2")
             )
             every {
-                mockGetSpecificSeriesLinkUseCase.execute(
+                mockGetSpecificEpisodesLinkUseCase.execute(
                     listOfLinks,
                     userAgent,
                     resolution
                 )
-            } returns specificSeries
+            } returns specificEpisode
 
             viewModel.getSpecificLinkSeries(listOfLinks, userAgent, resolution)
 
@@ -283,7 +283,7 @@ class JutLoaderViewModelTest {
         val resolution = "1080p"
 
         viewModel.getSpecificLinkSeries(listOfLinks, userAgent, resolution)
-        val expected = SpecificSeries(listOf("No internet connection"), mutableListOf())
+        val expected = SpecificEpisode(listOf("No internet connection"), mutableListOf())
 
         viewModel.specificLinks.take(1).collect { result ->
             assertEquals(expected, result)
@@ -331,7 +331,7 @@ class JutLoaderViewModelTest {
         val userAgent = USER_AGENT
         val linkOfConcreteSeries =
             mutableListOf("https://example.com/series/1", "https://example.com/series/2")
-        val names = mutableListOf("Series 1", "Series 2")
+        val names = mutableListOf("Episodes 1", "Episodes 2")
 
         val expectedReturnValue = 100L
         every {

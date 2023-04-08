@@ -20,14 +20,10 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.buffersolve.jutloader.data.parser.Parser
 import com.buffersolve.jutloader.presentation.ui.*
 import com.buffersolve.jutloader.presentation.ui.compose.dialog.lists.ResolutionPeakList
 import com.buffersolve.jutloader.presentation.ui.compose.dialog.lists.SeasonPeakList
 import com.buffersolve.jutloader.presentation.ui.compose.dialog.lists.SeriesPeakList
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
 @Composable
@@ -42,24 +38,15 @@ fun NavigationDialog(
     // Lists
     val seasonList = remember { mutableStateOf(listOf<String>()) }
     val seasonLink = remember { mutableStateOf(listOf<String>()) }
-//    viewModel.season.observe(viewLifecycleOwner) {
-//        seasonList.value = it.season
-//        seasonLink.value = it.seasonLink
-//    }
 
-    // Series
+//    val seasons = remember { mutableStateOf(hashMapOf()) }
+
+    // Episodes
     val seriesList = remember { mutableStateOf(listOf<String>()) }
     val seriesLink = remember { mutableStateOf(listOf<String>()) }
-//    viewModel.series.observe(viewLifecycleOwner) {
-//        seriesList.value = it.seria
-//        seriesLink.value = it.seriaLink
-//    }
 
     // Resolution
     val resList = remember { mutableStateOf(listOf<String>()) }
-//    viewModel.resolution.observe(viewLifecycleOwner) {
-//        resList.value = it.res
-//    }
 
     // Exception
     LaunchedEffect(key1 = 1) {
@@ -68,37 +55,33 @@ fun NavigationDialog(
         lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.isOnlyOneSeason.collect {
-                    Log.d("EXCEPTIONNNN22", it.toString())
+//                    Log.d("EXCEPTIONNNN22", it.toString())
                     ExceptionState.add(it.exception.toString())
                     if (it.exception == true) seasonList.value = listOf("Error, try a different name")
-                    Log.d("EXCEPTIONNNN22", ExceptionState.last().toString())
+//                    Log.d("EXCEPTIONNNN22", ExceptionState.last().toString())
 
                 }
-//                Parser.exception.collect { exception ->
-//                    ExceptionState.add(exception)
-//                    if (exception.isNotEmpty()) seasonList.value = listOf(exception)
-//                }
             }
         }
 
         // Season
         lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.season.collect {
-                    Log.d("SEASONVALUE", it.toString())
-                    seasonList.value = it.season
-                    seasonLink.value = it.seasonLink
+                viewModel.season.collect { season ->
+//                    Log.d("SEASONVALUE", season.toString())
+                    seasonList.value = season.season.keys.toList()
+                    seasonLink.value = season.season.entries.map { it.value }
                 }
             }
         }
 
-        // Series
+        // Episodes
         lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.series.collect {
-                    Log.d("SEASONVALUE", it.toString())
-                    seriesList.value = it.seria
-                    seriesLink.value = it.seriaLink
+                viewModel.episodes.collect { episodes ->
+//                    Log.d("SEASONVALUE", it.toString())
+                    seriesList.value = episodes.episodes.keys.toList()
+                    seriesLink.value = episodes.episodes.entries.map { it.value }
                 }
             }
         }
@@ -116,12 +99,6 @@ fun NavigationDialog(
 
 
     }
-
-
-//    Parser.exception.observe(viewLifecycleOwner) {
-//        ExceptionState.add(it)
-//        if (it.isNotEmpty()) seasonList.value = listOf(it)
-//    }
 
     val controller = rememberNavController()
 

@@ -1,9 +1,7 @@
 package com.buffersolve.jutloader.domain.usecase
 
 import com.buffersolve.jutloader.Constants.Companion.USER_AGENT
-import com.buffersolve.jutloader.domain.model.Resolution
-import com.buffersolve.jutloader.domain.model.Season
-import com.buffersolve.jutloader.domain.model.Series
+import com.buffersolve.jutloader.domain.model.Episodes
 import com.buffersolve.jutloader.domain.repository.Repository
 import io.mockk.MockKAnnotations
 import io.mockk.every
@@ -12,32 +10,28 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
-class GetOnlyOneSeriesUseCaseTest {
+class GetEpisodesUseCaseTest {
 
     @MockK
     private lateinit var mockRepository: Repository
 
-    private lateinit var useCase: GetOnlyOneSeriesUseCase
+    private lateinit var useCase: GetEpisodesUseCase
 
     @BeforeEach
     fun setUp() {
         MockKAnnotations.init(this)
-        useCase = GetOnlyOneSeriesUseCase(mockRepository)
+        useCase = GetEpisodesUseCase(mockRepository)
     }
 
     @Test
     fun `execute should return expected Series`() {
-        // given
-        val expectedSeries = Series(listOf("Series 1"), mutableListOf("/Series 1/"))
+        val expectedEpisodes = Episodes(listOf("Episodes 1"), mutableListOf("/series1/"))
         val url = "https://example.com"
         val userAgent = USER_AGENT
-        every { mockRepository.getOnlyOneSeriesUseCase(url, userAgent) } returns expectedSeries
+        every { mockRepository.getSeriesUseCase(url, userAgent) } returns expectedEpisodes
 
-        // when
         val actualSeries = useCase.execute(url, userAgent)
 
-        // then
-        assertEquals(expectedSeries, actualSeries)
+        assertEquals(expectedEpisodes, actualSeries)
     }
-
 }

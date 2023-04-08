@@ -3,10 +3,10 @@ package com.buffersolve.jutloader.data.repository
 import com.buffersolve.jutloader.Constants.Companion.USER_AGENT
 import com.buffersolve.jutloader.data.parser.getmethods.GetResolution
 import com.buffersolve.jutloader.data.parser.getmethods.GetSeasons
-import com.buffersolve.jutloader.data.parser.getmethods.GetSeries
-import com.buffersolve.jutloader.data.parser.getmethods.GetSpecificSeriesLink
+import com.buffersolve.jutloader.data.parser.getmethods.GetEpisodes
+import com.buffersolve.jutloader.data.parser.getmethods.GetSpecificEpisodesLink
 import com.buffersolve.jutloader.data.parser.getmethods.onlyone.GetOnlyOneSeason
-import com.buffersolve.jutloader.data.parser.getmethods.onlyone.GetOnlyOneSeasonSeries
+import com.buffersolve.jutloader.data.parser.getmethods.onlyone.GetOnlyOneSeasonEpisodes
 import com.buffersolve.jutloader.data.parser.getmethods.onlyone.IsOnlyOneSeasons
 import com.buffersolve.jutloader.domain.model.*
 import io.mockk.every
@@ -17,12 +17,12 @@ import org.junit.jupiter.api.Test
 class RepositoryImplTest {
 
     private val mockGetSeasons = mockk<GetSeasons>(relaxed = true)
-    private val mockGetSeries = mockk<GetSeries>()
+    private val mockGetEpisodes = mockk<GetEpisodes>()
     private val mockGetOnlyOneSeason = mockk<GetOnlyOneSeason>()
-    private val mockGetOnlyOneSeasonSeries = mockk<GetOnlyOneSeasonSeries>()
+    private val mockGetOnlyOneSeasonEpisodes = mockk<GetOnlyOneSeasonEpisodes>()
     private val mockIsOnlyOneSeasons = mockk<IsOnlyOneSeasons>()
     private val mockGetResolution = mockk<GetResolution>()
-    private val mockGetSpecificSeriesLink = mockk<GetSpecificSeriesLink>()
+    private val mockGetSpecificEpisodesLink = mockk<GetSpecificEpisodesLink>()
 
     private val repository = RepositoryImpl()
 
@@ -43,13 +43,13 @@ class RepositoryImplTest {
     fun `getSeriesUseCase should return expected Series object`() {
         val url = "https://example.com"
         val userAgent = USER_AGENT
-        val expectedSeries = Series(listOf(), mutableListOf())
+        val expectedEpisodes = Episodes(listOf(), mutableListOf())
 
-        every { mockGetSeries.execute(url, userAgent) } returns expectedSeries
+        every { mockGetEpisodes.execute(url, userAgent) } returns expectedEpisodes
 
         val result = repository.getSeriesUseCase(url, userAgent)
 
-        assertEquals(expectedSeries, result)
+        assertEquals(expectedEpisodes, result)
     }
 
     @Test
@@ -69,13 +69,13 @@ class RepositoryImplTest {
     fun `getOnlyOneSeriesUseCase should return expected Series object`() {
         val url = "https://example.com"
         val userAgent = USER_AGENT
-        val expectedSeries = Series(listOf(), mutableListOf())
+        val expectedEpisodes = Episodes(listOf(), mutableListOf())
 
-        every { mockGetOnlyOneSeasonSeries.execute(url, userAgent) } returns expectedSeries
+        every { mockGetOnlyOneSeasonEpisodes.execute(url, userAgent) } returns expectedEpisodes
 
         val result = repository.getOnlyOneSeriesUseCase(url, userAgent)
 
-        assertEquals(expectedSeries, result)
+        assertEquals(expectedEpisodes, result)
     }
 
     @Test
@@ -109,9 +109,9 @@ class RepositoryImplTest {
         val listOfLinks = listOf("/example/")
         val userAgent = USER_AGENT
         val resolution = "1080p"
-        val expectedSpecificLink = SpecificSeries(listOf(), listOf())
+        val expectedSpecificLink = SpecificEpisode(listOf(), listOf())
 
-        every { mockGetSpecificSeriesLink.execute(listOfLinks, userAgent, resolution) } returns expectedSpecificLink
+        every { mockGetSpecificEpisodesLink.execute(listOfLinks, userAgent, resolution) } returns expectedSpecificLink
 
         val result = repository.getSpecificSeriesLinkUseCase(listOfLinks, userAgent, resolution)
 

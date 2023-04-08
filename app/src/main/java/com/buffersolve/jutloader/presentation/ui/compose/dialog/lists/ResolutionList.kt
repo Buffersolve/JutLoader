@@ -66,8 +66,8 @@ fun ResolutionPeakList(
                             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                                 viewModel.specificLinks.collect {
 
-                                    specificLink = it.linkToSpecificSeries
-                                    specificName = it.listOfSeriesName
+                                    specificLink = it.specificEpisodeLinkList
+                                    specificName = it.specificEpisodeNameList
 
                                     if (specificLink.isNotEmpty()) {
 

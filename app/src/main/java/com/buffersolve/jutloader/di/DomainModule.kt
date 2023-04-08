@@ -26,8 +26,8 @@ class DomainModule {
     }
 
     @Provides
-    fun provideGetSeriesUseCase(repository: Repository) : GetSeriesUseCase {
-        return GetSeriesUseCase(repository = repository)
+    fun provideGetSeriesUseCase(repository: Repository) : GetEpisodesUseCase {
+        return GetEpisodesUseCase(repository = repository)
     }
 
     @Provides
@@ -36,8 +36,8 @@ class DomainModule {
     }
 
     @Provides
-    fun provideGetOnlyOneSeriesUseCase(repository: Repository) : GetOnlyOneSeriesUseCase {
-        return GetOnlyOneSeriesUseCase(repository = repository)
+    fun provideGetOnlyOneSeriesUseCase(repository: Repository) : GetOnlyOneEpisodeUseCase {
+        return GetOnlyOneEpisodeUseCase(repository = repository)
     }
 
     @Provides
@@ -46,8 +46,8 @@ class DomainModule {
     }
 
     @Provides
-    fun provideGetSpecificSeriesLinkUseCase(repository: Repository) : GetSpecificSeriesLinkUseCase {
-        return GetSpecificSeriesLinkUseCase(repository = repository)
+    fun provideGetSpecificSeriesLinkUseCase(repository: Repository) : GetSpecificEpisodesLinkUseCase {
+        return GetSpecificEpisodesLinkUseCase(repository = repository)
     }
 
     @Provides

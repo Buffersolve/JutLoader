@@ -12,25 +12,16 @@ class IsOnlyOneSeasons {
             userAgent = userAgent
         )
 
-        if (doc.isSuccess) {
+        return if (doc.isSuccess) {
             val isHasOnlyOneSeason: Boolean =
                 when (doc.getOrThrow().select("div[class=\"the_invis\"]").size > 0) {
                     true -> false
                     false -> true
                 }
-            return OneSeason(isHasOnlyOneSeason, null)
+            OneSeason(isHasOnlyOneSeason, null)
         } else {
-//            return OneSeason(null, Exception("Error"))
-            return OneSeason(null, true)
+            OneSeason(null, true)
         }
-
-//        val isHasOnlyOneSeason: Boolean =
-//            when (doc.select("div[class=\"the_invis\"]").size > 0) {
-//                true -> false
-//                false -> true
-//            }
-//
-//        return isHasOnlyOneSeason
 
     }
 

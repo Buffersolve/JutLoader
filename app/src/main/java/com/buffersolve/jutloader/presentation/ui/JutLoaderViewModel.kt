@@ -19,11 +19,11 @@ import javax.inject.Inject
 class JutLoaderViewModel @Inject constructor(
     private val connectivityManager: ConnectivityManager,
     private val getSeasonUseCase: GetSeasonUseCase,
-    private val getSeriesUseCase: GetSeriesUseCase,
+    private val getEpisodesUseCase: GetEpisodesUseCase,
     private val getOnlyOneSeasonsUseCase: GetOnlyOneSeasonUseCase,
-    private val getOnlyOneSeriesUseCase: GetOnlyOneSeriesUseCase,
+    private val getOnlyOneEpisodeUseCase: GetOnlyOneEpisodeUseCase,
     private val getResolutionUseCase: GetResolutionUseCase,
-    private val getSpecificSeriesLinkUseCase: GetSpecificSeriesLinkUseCase,
+    private val getSpecificEpisodesLinkUseCase: GetSpecificEpisodesLinkUseCase,
     private val isOnlyOneSeasonUseCase: IsOnlyOneSeasonUseCase,
     private val downloadUseCase: DownloadUseCase,
 ) : ViewModel() {
@@ -32,11 +32,11 @@ class JutLoaderViewModel @Inject constructor(
     private val _season = MutableSharedFlow<Season>(replay = 1)
     val season: SharedFlow<Season> = _season.asSharedFlow()
 
-    private val _series = MutableSharedFlow<Series>(replay = 1)
-    val series: SharedFlow<Series> = _series.asSharedFlow()
+    private val _episodes = MutableSharedFlow<Episodes>(replay = 1)
+    val episodes: SharedFlow<Episodes> = _episodes.asSharedFlow()
 
-    private val _specificLinks = MutableSharedFlow<SpecificSeries>(replay = 1)
-    val specificLinks: SharedFlow<SpecificSeries> = _specificLinks.asSharedFlow()
+    private val _specificLinks = MutableSharedFlow<SpecificEpisode>(replay = 1)
+    val specificLinks: SharedFlow<SpecificEpisode> = _specificLinks.asSharedFlow()
 
     private val _resolution = MutableSharedFlow<Resolution>(replay = 1)
     val resolution: SharedFlow<Resolution> = _resolution.asSharedFlow()
@@ -47,6 +47,8 @@ class JutLoaderViewModel @Inject constructor(
     private val _progress = MutableSharedFlow<Long>(replay = 1)
     var progress: SharedFlow<Long> = _progress.asSharedFlow()
 
+    private val errorHashMap = hashMapOf("No internet connection" to "No internet connection")
+
     // Seasons List
     fun getSeasons(
         url: String,
@@ -56,20 +58,20 @@ class JutLoaderViewModel @Inject constructor(
             val seasons = getSeasonUseCase.execute(url, userAgent)
             _season.emit(seasons)
         } else {
-            _season.emit(Season(listOf("No internet connection"), mutableListOf()))
+            _season.emit(Season(errorHashMap))
         }
     }
 
-    // Series List
+    // Episodes List
     fun getSeries(
         url: String,
         userAgent: String
     ) = viewModelScope.launch(Dispatchers.IO) {
         if (checkInternetConnection()) {
-            val series = getSeriesUseCase.execute(url, userAgent)
-            _series.emit(series)
+            val series = getEpisodesUseCase.execute(url, userAgent)
+            _episodes.emit(series)
         } else {
-            _series.emit(Series(listOf("No internet connection"), mutableListOf()))
+            _episodes.emit(Episodes(errorHashMap))
         }
     }
 
@@ -81,22 +83,22 @@ class JutLoaderViewModel @Inject constructor(
             val seasons = getOnlyOneSeasonsUseCase.execute(url, userAgent)
             _season.emit(seasons)
         } else {
-            _season.emit(Season(listOf("No internet connection"), mutableListOf()))
+            _season.emit(Season(errorHashMap))
 //            _season.value = Season(listOf("No internet connection"), mutableListOf())
 
         }
     }
 
-    // Series List
+    // Episodes List
     fun getOnlyOneSeries(
         url: String,
         userAgent: String
     ) = viewModelScope.launch(Dispatchers.IO) {
         if (checkInternetConnection()) {
-            val series = getOnlyOneSeriesUseCase.execute(url, userAgent)
-            _series.emit(series)
+            val series = getOnlyOneEpisodeUseCase.execute(url, userAgent)
+            _episodes.emit(series)
         } else {
-            _series.emit(Series(listOf("No internet connection"), mutableListOf()))
+            _episodes.emit(Episodes(errorHashMap))
         }
     }
 
@@ -113,7 +115,7 @@ class JutLoaderViewModel @Inject constructor(
         }
     }
 
-    // Specific Link Series List
+    // Specific Link Episodes List
     fun getSpecificLinkSeries(
         listOfLinks: List<String>,
         userAgent: String,
@@ -121,10 +123,10 @@ class JutLoaderViewModel @Inject constructor(
     ) = viewModelScope.launch(Dispatchers.IO) {
         if (checkInternetConnection()) {
             val specificLinks =
-                getSpecificSeriesLinkUseCase.execute(listOfLinks, userAgent, resolution)
+                getSpecificEpisodesLinkUseCase.execute(listOfLinks, userAgent, resolution)
             _specificLinks.emit(specificLinks)
         } else {
-            _specificLinks.emit(SpecificSeries(listOf("No internet connection"), mutableListOf()))
+            _specificLinks.emit(SpecificEpisode(listOf("No internet connection"), mutableListOf()))
         }
     }
 
@@ -136,7 +138,7 @@ class JutLoaderViewModel @Inject constructor(
             val isOnlyOneSeason = isOnlyOneSeasonUseCase.execute(url, userAgent)
             _isOnlyOneSeason.emit(isOnlyOneSeason)
         } else {
-            _season.emit(Season(listOf("No internet connection"), mutableListOf()))
+            _season.emit(Season(errorHashMap))
         }
     }
 

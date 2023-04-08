@@ -15,6 +15,7 @@ class GetSeasons {
         if (doc.isSuccess) {
             val seasons =
                 doc.getOrThrow().select("h2[class=\"b-b-title the-anime-season center\"]").eachText()
+
             val seasonsLinkS = doc.getOrThrow().select("div[class=\"the_invis\"]")
             val elements: Elements = seasonsLinkS.select("a")
 
@@ -25,24 +26,13 @@ class GetSeasons {
                 elList.add(attr)
             }
 
-            return Season(seasons, elList)
+            val seasonsHashMap = seasons.zip(elList).toMap(LinkedHashMap())
+
+            return Season(seasonsHashMap)
         } else {
-            return Season(listOf(), mutableListOf())
+            return Season(hashMapOf())
         }
 
-//        val seasons =
-//            doc.select("h2[class=\"b-b-title the-anime-season center\"]").eachText()
-//        val seasonsLinkS = doc.select("div[class=\"the_invis\"]")
-//        val elements: Elements = seasonsLinkS.select("a")
-//
-//        val elList = mutableListOf<String>()
-//
-//        elements.forEach {
-//            val attr = it.attr("href")
-//            elList.add(attr)
-//        }
-//
-//        return Season(seasons, elList)
 
     }
 

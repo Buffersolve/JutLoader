@@ -1,5 +1,6 @@
 package com.buffersolve.jutloader.presentation.ui.compose.dialog.lists
 
+import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -42,7 +43,16 @@ fun SeriesPeakList(
 //            controller.popBackStack("SeasonPeakList", inclusive = false, saveState = false)
 //        }
 
+//        val hashmap: HashMap<String, String> = seriesList.zip(linkSeriesList).associate { it.first to it.second }
+//        val hashMap2 = hashMapOf<String, String>()
+//        hashmap.entries.remo
+
+        val hashmap = seriesList.zip(linkSeriesList).toMap(HashMap())
+
+        Log.d("HASHMAP1", "$hashmap")
+
         LazyColumn {
+//            items(hashmap.keys.toList()) { item ->
             items(seriesList) { item ->
 
                 val isChecked = rememberSaveable { mutableStateOf(false) }
